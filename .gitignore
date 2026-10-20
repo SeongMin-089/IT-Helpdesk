@@ -1,0 +1,16 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Odoo source
+/odoo/
+
+# Sensitive configuration
+odoo.conf
+*.env
+.env.*
+
+# IDE and temporary files
+.vscode/
+*.log
