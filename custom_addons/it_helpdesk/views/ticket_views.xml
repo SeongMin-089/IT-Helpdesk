@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<odoo>
+    <!-- 문의 목록 공통 List View -->
+    <record id="view_it_helpdesk_ticket_list" model="ir.ui.view">
+        <field name="name">it.helpdesk.ticket.list</field>
+        <field name="model">it.helpdesk.ticket</field>
+        <field name="arch" type="xml">
+            <list string="전체 문의 목록"
+                default_order="priority_order desc, create_date asc">
+                <field name="reference" string="문의 번호" />
+                <field name="name" string="제목" />
+                <field name="category_id" string="유형" />
+                <field name="priority" string="긴급도" />
+                <field name="state" string="상태" />
+                <field name="assigned_user_id" string="담당자" />
+                <field name="requester_id" string="요청자" />
+                <field name="create_date" string="등록일" />
+            </list>
+        </field>
+    </record>
+
+    <!-- 문의 등록 및 상세 공통 Form View -->
+    <record id="view_it_helpdesk_ticket_form" model="ir.ui.view">
+        <field name="name">it.helpdesk.ticket.form</field>
+        <field name="model">it.helpdesk.ticket</field>
+        <field name="arch" type="xml">
+            <form string="IT 장애 문의">
+                <header>
+                    <button
+                        name="%(it_helpdesk.action_it_helpdesk_resolution_wizard)d"
+                        string="해결 처리"
+                        type="action"
+                        class="btn-primary"
+                        context="{'default_ticket_id': id}"
+                        invisible="not id or state != 'in_progress'"
+                    />
+                    <button
+                        name="%(it_helpdesk.action_it_helpdesk_reopen_wizard)d"
+                        string="재처리 요청"
+                        type="action"
+                        class="btn-secondary"
+                        context="{'default_ticket_id': id}"
+                        invisible="not id or state != 'resolved'"
+                    />
+                </header>
+                <sheet>
+                    <group string="문의 등록">
+                        <group>
+                            <field name="category_id" />
+                            <field name="name" />
+                            <field name="priority" />
+                        </group>
+                        <group>
+                            <field name="location" />
+                            <field name="contact" />
+                        </group>
+                    </group>
+
+                    <group string="장애 상세 내용">
+                        <field name="description"
+                            nolabel="1"
+                            placeholder="발생한 IT 장애 증상과 상황을 자세히 입력해 주세요." />
+                    </group>
+
+                    <group string="처리 정보" invisible="not id">
+                        <group>
+                            <field name="reference" readonly="1" />
+                            <field name="requester_id" readonly="1" />
+                        </group>
+                        <group>
+                            <field name="state" readonly="1" />
+                            <field name="assigned_user_id" readonly="1" />
+                        </group>
+                    </group>
+
+                    <group string="해결 정보" invisible="not id">
+                        <group>
+                            <field name="resolution_method" readonly="1" />
+                            <field name="resolved_date" readonly="1" />
+                        </group>
+                        <group>
+                            <field name="closed_date" readonly="1" />
+                            <field name="reopen_count" readonly="1" />
+                        </group>
+                    </group>
+
+                    <group string="해결 내용" invisible="not id">
+                        <field name="resolution" readonly="1" />
+                    </group>
+
+                    <group string="변경 이력" invisible="not id">
+                        <field name="history_ids" nolabel="1" readonly="1">
+                            <list create="false" edit="false" delete="false">
+                                <field name="change_date" string="변경 일시" />
+                                <field name="change_type" string="변경 유형" />
+                                <field name="old_value" string="변경 전" />
+                                <field name="new_value" string="변경 후" />
+                                <field name="changed_by" string="변경자" />
+                                <field name="description" string="내용 및 사유" />
+                            </list>
+                        </field>
+                    </group>
+                </sheet>
+                <chatter />
+            </form>
+        </field>
+    </record>
+
+
+    <!-- F-02 일반 직원용 내 문의 목록 -->
+    <record id="view_it_helpdesk_my_ticket_list" model="ir.ui.view">
+        <field name="name">it.helpdesk.my.ticket.list</field>
+        <field name="model">it.helpdesk.ticket</field>
+        <field name="arch" type="xml">
+            <list string="내 문의 목록" default_order="create_date desc">
+                <field name="reference" string="문의 번호" />
+                <field name="name" string="제목" />
+                <field name="category_id" string="유형" />
+                <field name="priority" string="긴급도" />
+                <field name="state" string="상태" />
+                <field name="assigned_user_id" string="담당자" />
+                <field name="create_date" string="등록일" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_it_helpdesk_ticket_search" model="ir.ui.view">
+        <field name="name">it.helpdesk.ticket.search</field>
+        <field name="model">it.helpdesk.ticket</field>
+        <field name="arch" type="xml">
+            <search string="문의 검색">
+                <field name="reference" />
+                <field name="name" />
+                <field name="requester_id" />
+                <field name="category_id" />
+                <field name="assigned_user_id" />
+
+                <separator />
+
+                <filter name="my_assigned"
+                    string="내 담당 문의"
+                    domain="[('assigned_user_id', '=', uid)]" />
+
+                <filter name="unassigned"
+                    string="미배정 문의"
+                    domain="[('assigned_user_id', '=', False)]" />
+
+                <separator />
+
+                <filter name="received"
+                    string="접수"
+                    domain="[('state', '=', 'received')]" />
+
+                <filter name="in_progress"
+                    string="처리 중"
+                    domain="[('state', '=', 'in_progress')]" />
+
+                <filter name="urgent"
+                    string="긴급"
+                    domain="[('priority', '=', 'urgent')]" />
+            </search>
+        </field>
+    </record>
+
+</odoo>

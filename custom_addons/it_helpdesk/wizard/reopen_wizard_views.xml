@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- F-05-W02 재처리 요청 팝업 -->
+    <record id="view_it_helpdesk_reopen_wizard_form" model="ir.ui.view">
+        <field name="name">it.helpdesk.reopen.wizard.form</field>
+        <field name="model">it.helpdesk.reopen.wizard</field>
+        <field name="arch" type="xml">
+            <form string="재처리 요청">
+                <group>
+                    <field name="ticket_id" invisible="1" />
+                    <field name="reason"
+                        placeholder="문제가 해결되지 않은 이유를 입력해 주세요." />
+                </group>
+                <footer>
+                    <button string="취소"
+                        special="cancel"
+                        class="btn-secondary" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- 재처리 요청 팝업 실행 액션 -->
+    <record id="action_it_helpdesk_reopen_wizard" model="ir.actions.act_window">
+        <field name="name">재처리 요청</field>
+        <field name="res_model">it.helpdesk.reopen.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_it_helpdesk_reopen_wizard_form" />
+        <field name="target">new</field>
+    </record>
+</odoo>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 네트워크 / 인터넷 -->
+    <record id="category_network" model="it.helpdesk.category">
+        <field name="name">네트워크 / 인터넷</field>
+        <field name="code">NETWORK</field>
+        <field name="description">Wi-Fi 연결 실패, 인터넷 불가 등</field>
+    </record>
+
+    <!-- PC / 노트북 -->
+    <record id="category_hardware" model="it.helpdesk.category">
+        <field name="name">PC / 노트북</field>
+        <field name="code">HARDWARE</field>
+        <field name="description">부팅 오류, 블루스크린 등</field>
+    </record>
+
+    <!-- 소프트웨어 -->
+    <record id="category_software" model="it.helpdesk.category">
+        <field name="name">소프트웨어</field>
+        <field name="code">SOFTWARE</field>
+        <field name="description">프로그램 실행 오류 등</field>
+    </record>
+
+    <!-- 프린터 / 주변기기 -->
+    <record id="category_peripheral" model="it.helpdesk.category">
+        <field name="name">프린터 / 주변기기</field>
+        <field name="code">PERIPHERAL</field>
+        <field name="description">인쇄 오류, 장치 인식 실패 등</field>
+    </record>
+
+    <!-- 계정 / 접근 -->
+    <record id="category_account" model="it.helpdesk.category">
+        <field name="name">계정 / 접근</field>
+        <field name="code">ACCOUNT</field>
+        <field name="description">로그인 실패, 계정 잠금 등</field>
+    </record>
+
+    <!-- 기타 -->
+    <record id="category_etc" model="it.helpdesk.category">
+        <field name="name">기타</field>
+        <field name="code">ETC</field>
+        <field name="description">기타 IT 장애</field>
+    </record>
+</odoo>

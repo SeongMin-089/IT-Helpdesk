@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 문의 목록을 여는 액션 -->
+    <record id="action_it_helpdesk_ticket" model="ir.actions.act_window">
+        <field name="name">문의 목록</field>
+        <field name="res_model">it.helpdesk.ticket</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_it_helpdesk_ticket_search"/>
+    </record>
+
+    <!-- IT Helpdesk 최상위 메뉴 -->
+    <menuitem
+        id="menu_it_helpdesk_root"
+        name="IT Helpdesk"
+        sequence="10"
+    />
+
+    <!-- 문의 관리 메뉴 -->
+    <menuitem
+        id="menu_it_helpdesk_tickets"
+        name="문의 관리"
+        parent="menu_it_helpdesk_root"
+        sequence="10"
+    />
+
+    <!-- 문의 목록 메뉴 -->
+    <menuitem
+        id="menu_it_helpdesk_ticket_list"
+        name="문의 목록"
+        parent="menu_it_helpdesk_tickets"
+        action="action_it_helpdesk_ticket"
+        sequence="10"
+    />
+
+    <!-- F-02 내 문의 목록 액션 -->
+    <record id="action_it_helpdesk_my_tickets" model="ir.actions.act_window">
+        <field name="name">내 문의 목록</field>
+        <field name="res_model">it.helpdesk.ticket</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('requester_id', '=', uid)]</field>
+        <field name="context">{'default_requester_id': uid}</field>
+    </record>
+
+    <!-- 직원용 List View 연결 -->
+    <record id="action_it_helpdesk_my_tickets_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1" />
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_it_helpdesk_my_ticket_list" />
+        <field name="act_window_id" ref="action_it_helpdesk_my_tickets" />
+    </record>
+
+    <!-- F-02 내 문의 메뉴 -->
+    <menuitem
+        id="menu_it_helpdesk_my_tickets"
+        name="내 문의"
+        parent="menu_it_helpdesk_tickets"
+        action="action_it_helpdesk_my_tickets"
+        sequence="5"
+    />
+
+    <record id="action_it_helpdesk_ticket_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1" />
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_it_helpdesk_ticket_list" />
+        <field name="act_window_id" ref="action_it_helpdesk_ticket" />
+    </record>
+
+    <!-- F-03 미배정 문의 액션 -->
+    <record id="action_it_helpdesk_unassigned_tickets" model="ir.actions.act_window">
+        <field name="name">미배정 문의</field>
+        <field name="res_model">it.helpdesk.ticket</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('assigned_user_id', '=', False)]</field>
+    </record>
+
+    <!-- 기존 F-03 전체 문의 List View 재사용 -->
+    <record id="action_it_helpdesk_unassigned_tickets_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1" />
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_it_helpdesk_ticket_list" />
+        <field name="act_window_id" ref="action_it_helpdesk_unassigned_tickets" />
+    </record>
+
+    <!-- 미배정 문의 메뉴 -->
+    <menuitem
+        id="menu_it_helpdesk_unassigned_tickets"
+        name="미배정 문의"
+        parent="menu_it_helpdesk_tickets"
+        action="action_it_helpdesk_unassigned_tickets"
+        sequence="20"
+    />
+
+</odoo>

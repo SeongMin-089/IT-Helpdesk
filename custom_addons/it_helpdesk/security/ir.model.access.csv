@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_it_helpdesk_ticket_admin,it.helpdesk.ticket.admin,model_it_helpdesk_ticket,base.group_system,1,1,1,1
+access_it_helpdesk_category_admin,it.helpdesk.category.admin,model_it_helpdesk_category,base.group_system,1,1,1,1
+access_it_helpdesk_history_admin,it.helpdesk.history.admin,model_it_helpdesk_history,base.group_system,1,0,1,0
+access_it_helpdesk_resolution_wizard_admin,it.helpdesk.resolution.wizard.admin,model_it_helpdesk_resolution_wizard,base.group_system,1,1,1,0
+access_it_helpdesk_reopen_wizard_admin,it.helpdesk.reopen.wizard.admin,model_it_helpdesk_reopen_wizard,base.group_system,1,1,1,0

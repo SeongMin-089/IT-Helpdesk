@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- F-05-W01 해결 처리 팝업 -->
+    <record id="view_it_helpdesk_resolution_wizard_form" model="ir.ui.view">
+        <field name="name">it.helpdesk.resolution.wizard.form</field>
+        <field name="model">it.helpdesk.resolution.wizard</field>
+        <field name="arch" type="xml">
+            <form string="해결 처리">
+                <group>
+                    <field name="ticket_id" invisible="1" />
+                    <field name="resolution_method" />
+                    <field name="resolution"
+                        placeholder="수행한 조치 내용과 해결 결과를 입력해 주세요." />
+                </group>
+                <footer>
+                    <button string="취소" special="cancel" class="btn-secondary" />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_it_helpdesk_resolution_wizard" model="ir.actions.act_window">
+        <field name="name">해결 처리</field>
+        <field name="res_model">it.helpdesk.resolution.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_it_helpdesk_resolution_wizard_form" />
+        <field name="target">new</field>
+    </record>
+</odoo>
