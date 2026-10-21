@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <odoo>
-    <!-- 문의 목록 공통 List View -->
+    <!-- F-03 담당자용 전체 문의 목록 -->
     <record id="view_it_helpdesk_ticket_list" model="ir.ui.view">
         <field name="name">it.helpdesk.ticket.list</field>
         <field name="model">it.helpdesk.ticket</field>
@@ -20,20 +19,57 @@
         </field>
     </record>
 
-    <!-- 문의 등록 및 상세 공통 Form View -->
+    <!-- F-04 문의 등록 / F-05 문의 상세 -->
     <record id="view_it_helpdesk_ticket_form" model="ir.ui.view">
         <field name="name">it.helpdesk.ticket.form</field>
         <field name="model">it.helpdesk.ticket</field>
         <field name="arch" type="xml">
             <form string="IT 장애 문의">
                 <header>
+                    <!-- 담당자 미배정: 신규 배정 -->
+                    <button
+                        name="%(it_helpdesk.action_it_helpdesk_assignment_wizard)d"
+                        string="담당자 배정"
+                        type="action"
+                        class="btn-primary"
+                        groups="it_helpdesk.group_it_helpdesk_agent"
+                        context="{'default_ticket_id': id}"
+                        invisible="not id or assigned_user_id or state == 'closed'"
+                    />
+                    <!-- 담당자 배정 완료: 담당자 변경 -->
+                    <button
+                        name="%(it_helpdesk.action_it_helpdesk_assignment_wizard)d"
+                        string="담당자 변경"
+                        type="action"
+                        class="btn-secondary"
+                        groups="it_helpdesk.group_it_helpdesk_agent"
+                        context="{'default_ticket_id': id}"
+                        invisible="not id or not assigned_user_id or state == 'closed'"
+                    />
+                    <button
+                        name="action_start_progress"
+                        string="처리 시작"
+                        type="object"
+                        class="btn-primary"
+                        groups="it_helpdesk.group_it_helpdesk_agent"
+                        invisible="not id or state != 'assigned'"
+                    />
+                    <button
+                        name="action_start_reopen"
+                        string="재처리 시작"
+                        type="object"
+                        class="btn-primary"
+                        groups="it_helpdesk.group_it_helpdesk_agent"
+                        invisible="not id or state != 'reopen_requested'"
+                    />
                     <button
                         name="%(it_helpdesk.action_it_helpdesk_resolution_wizard)d"
                         string="해결 처리"
                         type="action"
                         class="btn-primary"
                         context="{'default_ticket_id': id}"
-                        invisible="not id or state != 'in_progress'"
+                        groups="it_helpdesk.group_it_helpdesk_agent"
+                        invisible="not id or state not in ('in_progress', 'reopened_in_progress')"
                     />
                     <button
                         name="%(it_helpdesk.action_it_helpdesk_reopen_wizard)d"
@@ -41,25 +77,74 @@
                         type="action"
                         class="btn-secondary"
                         context="{'default_ticket_id': id}"
-                        invisible="not id or state != 'resolved'"
+                        invisible="not id or state != 'resolved' or requester_id != uid"
+                    />
+                    <button
+                        name="%(it_helpdesk.action_it_helpdesk_close_wizard)d"
+                        string="종료 승인"
+                        type="action"
+                        class="btn-primary"
+                        context="{'default_ticket_id': id}"
+                        invisible="not id or state != 'resolved' or requester_id != uid"
                     />
                 </header>
+
                 <sheet>
                     <group string="문의 등록">
                         <group>
-                            <field name="category_id" />
-                            <field name="name" />
-                            <field name="priority" />
+                            <!-- IT 담당자: 종료 전 수정 가능 -->
+                            <field name="category_id"
+                                groups="it_helpdesk.group_it_helpdesk_agent"
+                                readonly="state == 'closed'" />
+                            <field name="name"
+                                groups="it_helpdesk.group_it_helpdesk_agent"
+                                readonly="state == 'closed'" />
+
+                            <!-- 일반 직원: 접수·미배정일 때만 수정 가능 -->
+                            <field name="category_id"
+                                groups="!it_helpdesk.group_it_helpdesk_agent"
+                                readonly="id != False and (state != 'received' or assigned_user_id != False)" />
+                            <field name="name"
+                                groups="!it_helpdesk.group_it_helpdesk_agent"
+                                readonly="id != False and (state != 'received' or assigned_user_id != False)" />
+
+                            <!-- 긴급도: 직원은 등록 후 변경 불가 -->
+                            <field name="priority"
+                                groups="it_helpdesk.group_it_helpdesk_agent"
+                                readonly="state == 'closed'" />
+                            <field name="priority"
+                                groups="!it_helpdesk.group_it_helpdesk_agent"
+                                readonly="id != False" />
                         </group>
+
                         <group>
-                            <field name="location" />
-                            <field name="contact" />
+                            <field name="location"
+                                groups="it_helpdesk.group_it_helpdesk_agent"
+                                readonly="state == 'closed'" />
+                            <field name="contact"
+                                groups="it_helpdesk.group_it_helpdesk_agent"
+                                readonly="state == 'closed'" />
+
+                            <field name="location"
+                                groups="!it_helpdesk.group_it_helpdesk_agent"
+                                readonly="id != False and (state != 'received' or assigned_user_id != False)" />
+                            <field name="contact"
+                                groups="!it_helpdesk.group_it_helpdesk_agent"
+                                readonly="id != False and (state != 'received' or assigned_user_id != False)" />
                         </group>
                     </group>
 
                     <group string="장애 상세 내용">
                         <field name="description"
                             nolabel="1"
+                            groups="it_helpdesk.group_it_helpdesk_agent"
+                            readonly="state == 'closed'"
+                            placeholder="발생한 IT 장애 증상과 상황을 자세히 입력해 주세요." />
+
+                        <field name="description"
+                            nolabel="1"
+                            groups="!it_helpdesk.group_it_helpdesk_agent"
+                            readonly="id != False and (state != 'received' or assigned_user_id != False)"
                             placeholder="발생한 IT 장애 증상과 상황을 자세히 입력해 주세요." />
                     </group>
 
@@ -107,8 +192,7 @@
         </field>
     </record>
 
-
-    <!-- F-02 일반 직원용 내 문의 목록 -->
+    <!-- F-02 직원용 내 문의 목록 -->
     <record id="view_it_helpdesk_my_ticket_list" model="ir.ui.view">
         <field name="name">it.helpdesk.my.ticket.list</field>
         <field name="model">it.helpdesk.ticket</field>
@@ -125,6 +209,7 @@
         </field>
     </record>
 
+    <!-- 공통 검색 화면 -->
     <record id="view_it_helpdesk_ticket_search" model="ir.ui.view">
         <field name="name">it.helpdesk.ticket.search</field>
         <field name="model">it.helpdesk.ticket</field>
@@ -141,7 +226,6 @@
                 <filter name="my_assigned"
                     string="내 담당 문의"
                     domain="[('assigned_user_id', '=', uid)]" />
-
                 <filter name="unassigned"
                     string="미배정 문의"
                     domain="[('assigned_user_id', '=', False)]" />
@@ -151,16 +235,23 @@
                 <filter name="received"
                     string="접수"
                     domain="[('state', '=', 'received')]" />
-
                 <filter name="in_progress"
                     string="처리 중"
                     domain="[('state', '=', 'in_progress')]" />
-
+                <filter
+                    name="reopen_requested"
+                    string="재처리 요청"
+                    domain="[('state', '=', 'reopen_requested')]"
+                />
+                <filter
+                    name="reopened_in_progress"
+                    string="재처리 중"
+                    domain="[('state', '=', 'reopened_in_progress')]"
+                />
                 <filter name="urgent"
                     string="긴급"
                     domain="[('priority', '=', 'urgent')]" />
             </search>
         </field>
     </record>
-
 </odoo>

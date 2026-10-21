@@ -1,6 +1,11 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_it_helpdesk_ticket_admin,it.helpdesk.ticket.admin,model_it_helpdesk_ticket,base.group_system,1,1,1,0
-access_it_helpdesk_category_admin,it.helpdesk.category.admin,model_it_helpdesk_category,base.group_system,1,1,1,0
-access_it_helpdesk_history_admin,it.helpdesk.history.admin,model_it_helpdesk_history,base.group_system,1,0,1,0
-access_it_helpdesk_resolution_wizard_admin,it.helpdesk.resolution.wizard.admin,model_it_helpdesk_resolution_wizard,base.group_system,1,1,1,0
-access_it_helpdesk_reopen_wizard_admin,it.helpdesk.reopen.wizard.admin,model_it_helpdesk_reopen_wizard,base.group_system,1,1,1,0
+access_it_helpdesk_ticket_user,it.helpdesk.ticket.user,model_it_helpdesk_ticket,it_helpdesk.group_it_helpdesk_user,1,1,1,0
+access_it_helpdesk_ticket_agent,it.helpdesk.ticket.agent,model_it_helpdesk_ticket,it_helpdesk.group_it_helpdesk_agent,1,1,1,0
+access_it_helpdesk_category_user,it.helpdesk.category.user,model_it_helpdesk_category,it_helpdesk.group_it_helpdesk_user,1,0,0,0
+access_it_helpdesk_category_agent,it.helpdesk.category.agent,model_it_helpdesk_category,it_helpdesk.group_it_helpdesk_agent,1,1,1,0
+access_it_helpdesk_history_user,it.helpdesk.history.user,model_it_helpdesk_history,it_helpdesk.group_it_helpdesk_user,1,0,0,0
+access_it_helpdesk_history_agent,it.helpdesk.history.agent,model_it_helpdesk_history,it_helpdesk.group_it_helpdesk_agent,1,0,1,0
+access_it_helpdesk_resolution_wizard_agent,it.helpdesk.resolution.wizard.agent,model_it_helpdesk_resolution_wizard,it_helpdesk.group_it_helpdesk_agent,1,1,1,0
+access_it_helpdesk_reopen_wizard_user,it.helpdesk.reopen.wizard.user,model_it_helpdesk_reopen_wizard,it_helpdesk.group_it_helpdesk_user,1,1,1,0
+access_it_helpdesk_assignment_wizard_agent,it.helpdesk.assignment.wizard.agent,model_it_helpdesk_assignment_wizard,it_helpdesk.group_it_helpdesk_agent,1,1,1,0
+access_it_helpdesk_close_wizard_user,it.helpdesk.close.wizard.user,model_it_helpdesk_close_wizard,it_helpdesk.group_it_helpdesk_user,1,1,1,0

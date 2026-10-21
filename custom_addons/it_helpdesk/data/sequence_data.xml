@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_it_helpdesk_ticket" model="ir.sequence">
+        <field name="name">IT Helpdesk Ticket</field>
+        <field name="code">it.helpdesk.ticket</field>
+        <field name="prefix">HD-</field>
+        <field name="padding">5</field>
+        <field name="number_increment">1</field>
+    </record>
+</odoo>

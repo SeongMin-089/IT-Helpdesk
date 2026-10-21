@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- IT Helpdesk 앱 분류 -->
+    <record id="module_category_it_helpdesk" model="ir.module.category">
+        <field name="name">IT Helpdesk</field>
+        <field name="sequence">20</field>
+    </record>
+
+    <!-- Odoo 19 권한 그룹 분류 -->
+    <record id="privilege_it_helpdesk" model="res.groups.privilege">
+        <field name="name">IT Helpdesk</field>
+        <field name="category_id" ref="module_category_it_helpdesk" />
+    </record>
+
+    <!-- 일반 직원 -->
+    <record id="group_it_helpdesk_user" model="res.groups">
+        <field name="name">일반 직원</field>
+        <field name="privilege_id" ref="privilege_it_helpdesk" />
+        <field name="sequence">10</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]" />
+        <field name="comment">본인 IT 장애 문의 등록 및 조회</field>
+    </record>
+
+    <!-- IT 담당자 -->
+    <record id="group_it_helpdesk_agent" model="res.groups">
+        <field name="name">IT 담당자</field>
+        <field name="privilege_id" ref="privilege_it_helpdesk" />
+        <field name="sequence">20</field>
+        <field name="implied_ids"
+            eval="[(4, ref('group_it_helpdesk_user'))]" />
+        <field name="comment">전체 IT 장애 문의 조회 및 처리 관리</field>
+    </record>
+
+    <!-- 일반 직원: 본인이 등록한 문의만 접근 -->
+    <record id="rule_it_helpdesk_ticket_user" model="ir.rule">
+        <field name="name">IT Helpdesk - 본인 문의만 접근</field>
+        <field name="model_id" ref="model_it_helpdesk_ticket" />
+        <field name="groups" eval="[(4, ref('group_it_helpdesk_user'))]" />
+        <field name="domain_force">[('requester_id', '=', user.id)]</field>
+    </record>
+
+    <!-- IT 담당자: 전체 문의 접근 -->
+    <record id="rule_it_helpdesk_ticket_agent" model="ir.rule">
+        <field name="name">IT Helpdesk - 전체 문의 접근</field>
+        <field name="model_id" ref="model_it_helpdesk_ticket" />
+        <field name="groups" eval="[(4, ref('group_it_helpdesk_agent'))]" />
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+</odoo>

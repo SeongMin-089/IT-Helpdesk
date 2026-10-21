@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_it_helpdesk_close_wizard_form" model="ir.ui.view">
+        <field name="name">it.helpdesk.close.wizard.form</field>
+        <field name="model">it.helpdesk.close.wizard</field>
+        <field name="arch" type="xml">
+            <form string="문의 종료 승인">
+                <group>
+                    <field name="ticket_id" invisible="1" />
+                    <div class="alert alert-info" role="alert">
+                        해결 결과를 확인하셨나요?
+                        종료를 승인하면 해당 문의는 읽기 전용으로 전환됩니다.
+                    </div>
+                </group>
+                <footer>
+                    <button
+                        name="action_confirm"
+                        string="종료 승인"
+                        type="object"
+                        class="btn-primary"
+                    />
+                    <button
+                        string="취소"
+                        special="cancel"
+                        class="btn-secondary"
+                    />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_it_helpdesk_close_wizard" model="ir.actions.act_window">
+        <field name="name">문의 종료 승인</field>
+        <field name="res_model">it.helpdesk.close.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_it_helpdesk_close_wizard_form" />
+        <field name="target">new</field>
+    </record>
+</odoo>

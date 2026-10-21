@@ -8,13 +8,25 @@
             <form string="재처리 요청">
                 <group>
                     <field name="ticket_id" invisible="1" />
-                    <field name="reason"
-                        placeholder="문제가 해결되지 않은 이유를 입력해 주세요." />
+                    <field
+                        name="reason"
+                        required="1"
+                        placeholder="문제가 해결되지 않은 이유를 입력해 주세요."
+                    />
                 </group>
+
                 <footer>
-                    <button string="취소"
+                    <button
+                        name="action_confirm"
+                        string="재처리 요청하기"
+                        type="object"
+                        class="btn-primary"
+                    />
+                    <button
+                        string="취소"
                         special="cancel"
-                        class="btn-secondary" />
+                        class="btn-secondary"
+                    />
                 </footer>
             </form>
         </field>
