@@ -36,6 +36,7 @@
                         context="{'default_ticket_id': id}"
                         invisible="not id or assigned_user_id or state == 'closed'"
                     />
+
                     <!-- 담당자 배정 완료: 담당자 변경 -->
                     <button
                         name="%(it_helpdesk.action_it_helpdesk_assignment_wizard)d"
@@ -46,6 +47,8 @@
                         context="{'default_ticket_id': id}"
                         invisible="not id or not assigned_user_id or state == 'closed'"
                     />
+
+                    <!-- 최초 처리 시작 -->
                     <button
                         name="action_start_progress"
                         string="처리 시작"
@@ -54,6 +57,8 @@
                         groups="it_helpdesk.group_it_helpdesk_agent"
                         invisible="not id or state != 'assigned'"
                     />
+
+                    <!-- 재처리 시작 -->
                     <button
                         name="action_start_reopen"
                         string="재처리 시작"
@@ -62,6 +67,8 @@
                         groups="it_helpdesk.group_it_helpdesk_agent"
                         invisible="not id or state != 'reopen_requested'"
                     />
+
+                    <!-- 해결 처리 -->
                     <button
                         name="%(it_helpdesk.action_it_helpdesk_resolution_wizard)d"
                         string="해결 처리"
@@ -71,6 +78,8 @@
                         groups="it_helpdesk.group_it_helpdesk_agent"
                         invisible="not id or state not in ('in_progress', 'reopened_in_progress')"
                     />
+
+                    <!-- 요청자 재처리 요청 -->
                     <button
                         name="%(it_helpdesk.action_it_helpdesk_reopen_wizard)d"
                         string="재처리 요청"
@@ -79,6 +88,8 @@
                         context="{'default_ticket_id': id}"
                         invisible="not id or state != 'resolved' or requester_id != uid"
                     />
+
+                    <!-- 요청자 종료 승인 -->
                     <button
                         name="%(it_helpdesk.action_it_helpdesk_close_wizard)d"
                         string="종료 승인"
@@ -90,64 +101,95 @@
                 </header>
 
                 <sheet>
+                    <!-- 문의 원본 정보 -->
                     <group string="문의 등록">
                         <group>
-                            <!-- IT 담당자: 종료 전 수정 가능 -->
-                            <field name="category_id"
+                            <!-- IT 담당자: 신규 등록 시 입력, 저장 후 읽기 전용 -->
+                            <field
+                                name="category_id"
                                 groups="it_helpdesk.group_it_helpdesk_agent"
-                                readonly="state == 'closed'" />
-                            <field name="name"
+                                readonly="id != False"
+                            />
+                            <field
+                                name="name"
                                 groups="it_helpdesk.group_it_helpdesk_agent"
-                                readonly="state == 'closed'" />
+                                readonly="id != False"
+                            />
 
-                            <!-- 일반 직원: 접수·미배정일 때만 수정 가능 -->
-                            <field name="category_id"
+                            <!-- 일반 직원: 접수·미배정일 때만 수정 -->
+                            <field
+                                name="category_id"
                                 groups="!it_helpdesk.group_it_helpdesk_agent"
-                                readonly="id != False and (state != 'received' or assigned_user_id != False)" />
-                            <field name="name"
+                                readonly="id != False and (state != 'received' or assigned_user_id != False)"
+                            />
+                            <field
+                                name="name"
                                 groups="!it_helpdesk.group_it_helpdesk_agent"
-                                readonly="id != False and (state != 'received' or assigned_user_id != False)" />
+                                readonly="id != False and (state != 'received' or assigned_user_id != False)"
+                            />
 
-                            <!-- 긴급도: 직원은 등록 후 변경 불가 -->
-                            <field name="priority"
+                            <!-- 긴급도: IT 담당자는 종료 전 변경 가능 -->
+                            <field
+                                name="priority"
                                 groups="it_helpdesk.group_it_helpdesk_agent"
-                                readonly="state == 'closed'" />
-                            <field name="priority"
+                                readonly="state == 'closed'"
+                            />
+                            <field
+                                name="priority"
                                 groups="!it_helpdesk.group_it_helpdesk_agent"
-                                readonly="id != False" />
+                                readonly="id != False"
+                            />
                         </group>
 
                         <group>
-                            <field name="location"
+                            <!-- IT 담당자: 신규 등록 시 입력, 저장 후 읽기 전용 -->
+                            <field
+                                name="location"
                                 groups="it_helpdesk.group_it_helpdesk_agent"
-                                readonly="state == 'closed'" />
-                            <field name="contact"
+                                readonly="id != False"
+                            />
+                            <field
+                                name="contact"
                                 groups="it_helpdesk.group_it_helpdesk_agent"
-                                readonly="state == 'closed'" />
+                                readonly="id != False"
+                            />
 
-                            <field name="location"
+                            <!-- 일반 직원: 접수·미배정일 때만 수정 -->
+                            <field
+                                name="location"
                                 groups="!it_helpdesk.group_it_helpdesk_agent"
-                                readonly="id != False and (state != 'received' or assigned_user_id != False)" />
-                            <field name="contact"
+                                readonly="id != False and (state != 'received' or assigned_user_id != False)"
+                            />
+                            <field
+                                name="contact"
                                 groups="!it_helpdesk.group_it_helpdesk_agent"
-                                readonly="id != False and (state != 'received' or assigned_user_id != False)" />
+                                readonly="id != False and (state != 'received' or assigned_user_id != False)"
+                            />
                         </group>
                     </group>
 
+                    <!-- 문의 내용 -->
                     <group string="장애 상세 내용">
-                        <field name="description"
+                        <!-- IT 담당자: 신규 등록 시 입력, 저장 후 읽기 전용 -->
+                        <field
+                            name="description"
                             nolabel="1"
                             groups="it_helpdesk.group_it_helpdesk_agent"
-                            readonly="state == 'closed'"
-                            placeholder="발생한 IT 장애 증상과 상황을 자세히 입력해 주세요." />
+                            readonly="id != False"
+                            placeholder="발생한 IT 장애 증상과 상황을 자세히 입력해 주세요."
+                        />
 
-                        <field name="description"
+                        <!-- 일반 직원: 접수·미배정일 때만 수정 -->
+                        <field
+                            name="description"
                             nolabel="1"
                             groups="!it_helpdesk.group_it_helpdesk_agent"
                             readonly="id != False and (state != 'received' or assigned_user_id != False)"
-                            placeholder="발생한 IT 장애 증상과 상황을 자세히 입력해 주세요." />
+                            placeholder="발생한 IT 장애 증상과 상황을 자세히 입력해 주세요."
+                        />
                     </group>
 
+                    <!-- 처리 정보 -->
                     <group string="처리 정보" invisible="not id">
                         <group>
                             <field name="reference" readonly="1" />
@@ -159,6 +201,7 @@
                         </group>
                     </group>
 
+                    <!-- 해결 정보 -->
                     <group string="해결 정보" invisible="not id">
                         <group>
                             <field name="resolution_method" readonly="1" />
@@ -170,23 +213,52 @@
                         </group>
                     </group>
 
+                    <!-- 해결 내용 -->
                     <group string="해결 내용" invisible="not id">
                         <field name="resolution" readonly="1" />
                     </group>
 
+                    <!-- 변경 이력 -->
                     <group string="변경 이력" invisible="not id">
-                        <field name="history_ids" nolabel="1" readonly="1">
-                            <list create="false" edit="false" delete="false">
-                                <field name="change_date" string="변경 일시" />
-                                <field name="change_type" string="변경 유형" />
-                                <field name="old_value" string="변경 전" />
-                                <field name="new_value" string="변경 후" />
-                                <field name="changed_by" string="변경자" />
-                                <field name="description" string="내용 및 사유" />
+                        <field
+                            name="history_ids"
+                            nolabel="1"
+                            readonly="1"
+                        >
+                            <list
+                                create="false"
+                                edit="false"
+                                delete="false"
+                            >
+                                <field
+                                    name="change_date"
+                                    string="변경 일시"
+                                />
+                                <field
+                                    name="change_type"
+                                    string="변경 유형"
+                                />
+                                <field
+                                    name="old_value"
+                                    string="변경 전"
+                                />
+                                <field
+                                    name="new_value"
+                                    string="변경 후"
+                                />
+                                <field
+                                    name="changed_by"
+                                    string="변경자"
+                                />
+                                <field
+                                    name="description"
+                                    string="내용 및 사유"
+                                />
                             </list>
                         </field>
                     </group>
                 </sheet>
+
                 <chatter />
             </form>
         </field>
@@ -197,7 +269,10 @@
         <field name="name">it.helpdesk.my.ticket.list</field>
         <field name="model">it.helpdesk.ticket</field>
         <field name="arch" type="xml">
-            <list string="내 문의 목록" default_order="create_date desc">
+            <list
+                string="내 문의 목록"
+                default_order="create_date desc"
+            >
                 <field name="reference" string="문의 번호" />
                 <field name="name" string="제목" />
                 <field name="category_id" string="유형" />
@@ -223,21 +298,29 @@
 
                 <separator />
 
-                <filter name="my_assigned"
+                <filter
+                    name="my_assigned"
                     string="내 담당 문의"
-                    domain="[('assigned_user_id', '=', uid)]" />
-                <filter name="unassigned"
+                    domain="[('assigned_user_id', '=', uid)]"
+                />
+                <filter
+                    name="unassigned"
                     string="미배정 문의"
-                    domain="[('assigned_user_id', '=', False)]" />
+                    domain="[('assigned_user_id', '=', False)]"
+                />
 
                 <separator />
 
-                <filter name="received"
+                <filter
+                    name="received"
                     string="접수"
-                    domain="[('state', '=', 'received')]" />
-                <filter name="in_progress"
+                    domain="[('state', '=', 'received')]"
+                />
+                <filter
+                    name="in_progress"
                     string="처리 중"
-                    domain="[('state', '=', 'in_progress')]" />
+                    domain="[('state', '=', 'in_progress')]"
+                />
                 <filter
                     name="reopen_requested"
                     string="재처리 요청"
@@ -248,9 +331,11 @@
                     string="재처리 중"
                     domain="[('state', '=', 'reopened_in_progress')]"
                 />
-                <filter name="urgent"
+                <filter
+                    name="urgent"
                     string="긴급"
-                    domain="[('priority', '=', 'urgent')]" />
+                    domain="[('priority', '=', 'urgent')]"
+                />
             </search>
         </field>
     </record>
