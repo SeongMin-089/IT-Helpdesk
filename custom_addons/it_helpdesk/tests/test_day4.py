@@ -129,6 +129,13 @@ class TestHelpdeskDay4(TransactionCase):
             ticket.sudo()._write_workflow({"category_id": inactive_category.id})
 
     def test_ticket_search_views_and_menu_actions(self):
+        def get_search_arch(user, view):
+            view_data = self.env["it.helpdesk.ticket"].with_user(user).get_view(
+                view.id,
+                "search",
+            )
+            return etree.fromstring(view_data["arch"].encode())
+
         state_filters = {
             "received",
             "assigned",
@@ -146,9 +153,39 @@ class TestHelpdeskDay4(TransactionCase):
         }
 
         my_search = self.env.ref("it_helpdesk.view_it_helpdesk_my_ticket_search")
-        my_arch = etree.fromstring(my_search.arch_db.encode())
+        my_source_arch = etree.fromstring(my_search.arch_db.encode())
         self.assertEqual(
-            set(my_arch.xpath("/search/field/@name")),
+            {
+                (node.tag, node.get("name"), node.get("groups"))
+                for node in my_source_arch.xpath("//*[@groups]")
+            },
+            {
+                (
+                    "field",
+                    "requester_id",
+                    "it_helpdesk.group_it_helpdesk_agent",
+                ),
+                (
+                    "filter",
+                    "my_assigned",
+                    "it_helpdesk.group_it_helpdesk_agent",
+                ),
+                (
+                    "filter",
+                    "unassigned",
+                    "it_helpdesk.group_it_helpdesk_agent",
+                ),
+                (
+                    "filter",
+                    "group_by_assigned_user",
+                    "it_helpdesk.group_it_helpdesk_agent",
+                ),
+            },
+        )
+
+        requester_my_arch = get_search_arch(self.requester, my_search)
+        self.assertEqual(
+            set(requester_my_arch.xpath("/search/field/@name")),
             {
                 "reference",
                 "name",
@@ -159,18 +196,45 @@ class TestHelpdeskDay4(TransactionCase):
             },
         )
         self.assertEqual(
-            set(my_arch.xpath("/search/filter/@name")),
+            set(requester_my_arch.xpath("/search/filter/@name")),
             state_filters | priority_filters,
         )
         self.assertEqual(
-            set(my_arch.xpath("/search/group/filter/@name")),
+            set(requester_my_arch.xpath("/search/group/filter/@name")),
             {"group_by_category", "group_by_state", "group_by_priority"},
+        )
+
+        agent_my_arch = get_search_arch(self.agent, my_search)
+        self.assertEqual(
+            set(agent_my_arch.xpath("/search/field/@name")),
+            {
+                "reference",
+                "name",
+                "requester_id",
+                "category_id",
+                "state",
+                "priority",
+                "assigned_user_id",
+            },
+        )
+        self.assertEqual(
+            set(agent_my_arch.xpath("/search/filter/@name")),
+            state_filters | priority_filters | {"my_assigned", "unassigned"},
+        )
+        self.assertEqual(
+            set(agent_my_arch.xpath("/search/group/filter/@name")),
+            {
+                "group_by_category",
+                "group_by_state",
+                "group_by_priority",
+                "group_by_assigned_user",
+            },
         )
 
         management_search = self.env.ref(
             "it_helpdesk.view_it_helpdesk_ticket_search"
         )
-        management_arch = etree.fromstring(management_search.arch_db.encode())
+        management_arch = get_search_arch(self.agent, management_search)
         self.assertEqual(
             set(management_arch.xpath("/search/field/@name")),
             {
