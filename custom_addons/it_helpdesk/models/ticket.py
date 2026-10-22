@@ -210,17 +210,16 @@ class HelpdeskTicket(models.Model):
                         raise AccessError(
                             "신규 문의는 접수·미배정 상태로만 " "등록할 수 있습니다."
                         )
-                # 일반 직원은 본인 명의로만 문의 등록
-                if not is_agent and vals.get("requester_id") not in (
+                # 직원과 담당자 모두 본인 명의로만 문의 등록
+                if vals.get("requester_id") not in (
                     None,
                     False,
                     self.env.user.id,
                 ):
                     raise AccessError(
-                        "일반 직원은 본인 명의로만 " "문의를 등록할 수 있습니다."
+                        "본인 명의로만 문의를 등록할 수 있습니다."
                     )
-                if not is_agent:
-                    vals["requester_id"] = self.env.user.id
+                vals["requester_id"] = self.env.user.id
                 vals.update(
                     {
                         "state": "received",
@@ -232,12 +231,37 @@ class HelpdeskTicket(models.Model):
             self._validate_ticket_values(vals)
             if "contact" in vals:
                 vals["contact"] = self._format_contact(vals["contact"])
-        # 서버에서 문의 번호 자동 발급
+        # 서버에서 문의 번호 자동 발급. 기존 데이터나 조정된 시퀀스와
+        # 충돌하더라도 새 문의에는 이미 사용 중인 번호를 부여하지 않는다.
         for vals in vals_list:
-            vals["reference"] = (
-                self.env["ir.sequence"].next_by_code("it.helpdesk.ticket") or "New"
-            )
+            for _attempt in range(100):
+                reference = self.env["ir.sequence"].next_by_code(
+                    "it.helpdesk.ticket"
+                )
+                if reference and not self.sudo().search_count(
+                    [("reference", "=", reference)],
+                    limit=1,
+                ):
+                    vals["reference"] = reference
+                    break
+            else:
+                raise ValidationError(
+                    "고유한 문의 번호를 발급할 수 없습니다. "
+                    "문의 번호 시퀀스를 확인해 주세요."
+                )
         return super().create(vals_list)
+
+    @api.constrains("reference")
+    def _check_reference_unique(self):
+        for ticket in self.filtered(lambda record: record.reference):
+            if self.sudo().search_count(
+                [
+                    ("reference", "=", ticket.reference),
+                    ("id", "!=", ticket.id),
+                ],
+                limit=1,
+            ):
+                raise ValidationError("문의 번호는 중복될 수 없습니다.")
 
     # 문의 등록 및 수정 시 입력값 검증
     @api.constrains(

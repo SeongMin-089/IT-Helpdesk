@@ -6,6 +6,11 @@ class HelpdeskCategory(models.Model):
     _description = "IT Helpdesk Category"
     _order = "name"
 
+    _code_unique = models.Constraint(
+        "UNIQUE (code)",
+        "문의 유형 코드는 중복될 수 없습니다.",
+    )
+
     name = fields.Char(
         string="유형명",
         required=True,

@@ -18,6 +18,7 @@
         "wizard/reopen_wizard_views.xml",
         "wizard/close_wizard_views.xml",
         "views/ticket_views.xml",
+        "views/category_views.xml",
         "views/menu.xml",
     ],
     "application": True,
