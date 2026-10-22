@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
     <t t-name="it_helpdesk.Dashboard">
-        <div class="o_it_helpdesk_dashboard">
+        <div class="o_it_helpdesk_dashboard" t-att-class="props.className">
             <div t-if="state.loading" class="o_it_helpdesk_loading">
                 <i class="fa fa-spinner fa-spin" aria-hidden="true" />
                 <span>문의 현황을 불러오는 중입니다.</span>
