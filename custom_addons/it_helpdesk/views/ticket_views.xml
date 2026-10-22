@@ -113,6 +113,8 @@
                                 name="category_id"
                                 groups="it_helpdesk.group_it_helpdesk_agent"
                                 readonly="id != False"
+                                domain="[('active', '=', True)]"
+                                options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
                             />
                             <field
                                 name="name"
@@ -125,6 +127,8 @@
                                 name="category_id"
                                 groups="!it_helpdesk.group_it_helpdesk_agent"
                                 readonly="id != False and (state != 'received' or assigned_user_id != False)"
+                                domain="[('active', '=', True)]"
+                                options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
                             />
                             <field
                                 name="name"

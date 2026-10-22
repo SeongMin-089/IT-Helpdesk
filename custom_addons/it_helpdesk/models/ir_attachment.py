@@ -1,6 +1,7 @@
 import base64
 import io
 import os
+import unicodedata
 import zipfile
 from collections import defaultdict
 
@@ -24,6 +25,17 @@ class HelpdeskAttachment(models.Model):
         ".xlsx",
         ".txt",
     }
+    _BINARY_SIGNATURES = (
+        b"%PDF-",
+        b"\x89PNG\r\n\x1a\n",
+        b"\xff\xd8\xff",
+        b"PK\x03\x04",
+        b"GIF87a",
+        b"GIF89a",
+        b"MZ",
+        b"\x7fELF",
+        b"\x1f\x8b",
+    )
 
     @api.model
     def _helpdesk_raw_from_values(self, vals, attachment=None):
@@ -55,7 +67,7 @@ class HelpdeskAttachment(models.Model):
             raise ValidationError("PNG 확장자와 실제 파일 형식이 일치하지 않습니다.")
         if extension == ".pdf" and detected_type != "application/pdf":
             raise ValidationError("PDF 확장자와 실제 파일 형식이 일치하지 않습니다.")
-        if extension == ".txt" and not detected_type.startswith("text/"):
+        if extension == ".txt" and not self._is_valid_utf8_text(raw):
             raise ValidationError("TXT 확장자와 실제 파일 형식이 일치하지 않습니다.")
         if extension in (".docx", ".xlsx"):
             try:
@@ -65,6 +77,7 @@ class HelpdeskAttachment(models.Model):
                 raise ValidationError(
                     "Office 문서 확장자와 실제 파일 형식이 일치하지 않습니다."
                 )
+
             required_prefix = "word/" if extension == ".docx" else "xl/"
             if "[Content_Types].xml" not in names or not any(
                 item.startswith(required_prefix) for item in names
@@ -72,6 +85,23 @@ class HelpdeskAttachment(models.Model):
                 raise ValidationError(
                     "Office 문서 확장자와 실제 파일 형식이 일치하지 않습니다."
                 )
+
+    @api.model
+    def _is_valid_utf8_text(self, raw):
+        """Validate TXT content without relying on platform MIME detection."""
+        if any(raw.startswith(signature) for signature in self._BINARY_SIGNATURES):
+            return False
+        try:
+            text = raw.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            return False
+
+        allowed_controls = {"\t", "\n", "\r", "\f"}
+        return not any(
+            character not in allowed_controls
+            and unicodedata.category(character) == "Cc"
+            for character in text
+        )
 
     @api.model
     def _helpdesk_check_ticket_access(self, ticket):

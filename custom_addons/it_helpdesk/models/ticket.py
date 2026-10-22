@@ -40,6 +40,7 @@ class HelpdeskTicket(models.Model):
         "it.helpdesk.category",
         string="문의 유형",
         required=True,
+        domain=[("active", "=", True)],
     )
     # 긴급도
     priority = fields.Selection(
@@ -265,6 +266,7 @@ class HelpdeskTicket(models.Model):
 
     # 문의 등록 및 수정 시 입력값 검증
     @api.constrains(
+        "category_id",
         "name",
         "description",
         "location",
@@ -272,6 +274,8 @@ class HelpdeskTicket(models.Model):
     )
     def _check_ticket_input(self):
         for ticket in self:
+            if not ticket.category_id.active:
+                raise ValidationError("활성화된 문의 유형만 선택할 수 있습니다.")
             self._validate_ticket_values(
                 {
                     "name": ticket.name,

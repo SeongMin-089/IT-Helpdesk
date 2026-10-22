@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+<data noupdate="1">
     <!-- 네트워크 / 인터넷 -->
     <record id="category_network" model="it.helpdesk.category">
         <field name="name">네트워크 / 인터넷</field>
@@ -41,4 +42,5 @@
         <field name="code">ETC</field>
         <field name="description">기타 IT 장애</field>
     </record>
+</data>
 </odoo>

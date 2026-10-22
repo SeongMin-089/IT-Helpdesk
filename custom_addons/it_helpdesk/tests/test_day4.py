@@ -1,6 +1,9 @@
-from psycopg2 import IntegrityError
+import ast
 
-from odoo.exceptions import AccessError, ValidationError
+from psycopg2 import IntegrityError
+from lxml import etree
+
+from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tests import TransactionCase, new_test_user, tagged
 
 
@@ -66,6 +69,64 @@ class TestHelpdeskDay4(TransactionCase):
                 }
             )
 
+    def test_ticket_category_selector_is_restricted(self):
+        view = self.env.ref("it_helpdesk.view_it_helpdesk_ticket_form")
+        arch = etree.fromstring(view.arch_db.encode())
+        category_fields = arch.xpath("//field[@name='category_id']")
+        self.assertEqual(len(category_fields), 2)
+        for field_node in category_fields:
+            self.assertEqual(field_node.get("domain"), "[('active', '=', True)]")
+            options = ast.literal_eval(field_node.get("options"))
+            self.assertTrue(options["no_create"])
+            self.assertTrue(options["no_create_edit"])
+            self.assertTrue(options["no_open"])
+
+        inactive_category = self.env["it.helpdesk.category"].with_user(
+            self.agent
+        ).create(
+            {
+                "name": "비활성 유형 테스트",
+                "code": "INACTIVE_TEST",
+                "active": False,
+            }
+        )
+        values = self._ticket_values("비활성 유형 차단")
+        values["category_id"] = inactive_category.id
+        with self.assertRaises(ValidationError):
+            self.env["it.helpdesk.ticket"].with_user(self.requester).create(values)
+
+        with self.assertRaises(AccessError):
+            inactive_category.with_user(self.requester).write(
+                {"name": "직원 수정 시도"}
+            )
+
+        alternate_category = self.env["it.helpdesk.category"].with_user(
+            self.agent
+        ).create(
+            {
+                "name": "변경 가능 유형",
+                "code": "CHANGE_TEST",
+            }
+        )
+        alternate_category.with_user(self.agent).write(
+            {"description": "설정 화면 관리 권한 회귀 테스트"}
+        )
+        ticket = self._create_ticket(suffix="유형 변경 권한")
+        ticket.with_user(self.requester).write(
+            {"category_id": alternate_category.id}
+        )
+        self.assertEqual(ticket.category_id, alternate_category)
+
+        ticket.with_user(self.agent).action_assign_to(self.agent.id)
+        with self.assertRaises(UserError):
+            ticket.with_user(self.requester).write(
+                {"category_id": self.category.id}
+            )
+        with self.assertRaises(AccessError):
+            ticket.with_user(self.agent).write({"category_id": self.category.id})
+        with self.assertRaises(ValidationError):
+            ticket.sudo()._write_workflow({"category_id": inactive_category.id})
+
     def test_attachment_type_size_count_and_owner(self):
         ticket = self._create_ticket(suffix="첨부 제한")
         Attachment = self.env["ir.attachment"].with_user(self.requester)
@@ -104,6 +165,70 @@ class TestHelpdeskDay4(TransactionCase):
                     **base_values,
                     "name": "other-user.txt",
                     "res_id": other_ticket.id,
+                }
+            )
+
+    def test_txt_utf8_bom_and_line_endings(self):
+        ticket = self._create_ticket(suffix="TXT 인코딩")
+        Attachment = self.env["ir.attachment"].with_user(self.requester)
+        text_files = {
+            "ascii.txt": b"plain ASCII text",
+            "korean.txt": "한글 텍스트 첨부파일입니다.".encode("utf-8"),
+            "bom.txt": b"\xef\xbb\xbf" + "BOM이 포함된 한글입니다.".encode("utf-8"),
+            "crlf.txt": "첫 번째 줄\r\n두 번째 줄\r\n".encode("utf-8"),
+        }
+        for name, raw in text_files.items():
+            attachment = Attachment.create(
+                {
+                    "name": name,
+                    "raw": raw,
+                    "res_model": ticket._name,
+                    "res_id": ticket.id,
+                }
+            )
+            self.assertTrue(attachment)
+
+        pending = Attachment.create(
+            {
+                "name": "chatter-korean.txt",
+                "raw": "Chatter 한글 TXT입니다.\r\n두 번째 줄입니다.".encode("utf-8"),
+                "res_model": "mail.compose.message",
+                "res_id": 0,
+            }
+        )
+        message = ticket.with_user(self.requester).message_post(
+            body="한글 TXT 첨부",
+            attachment_ids=pending.ids,
+        )
+        self.assertEqual(pending.res_model, ticket._name)
+        self.assertIn(pending, message.attachment_ids)
+
+        binary_ticket = self._create_ticket(suffix="TXT 바이너리 차단")
+        with self.assertRaises(ValidationError):
+            Attachment.create(
+                {
+                    "name": "renamed-binary.txt",
+                    "raw": b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR",
+                    "res_model": binary_ticket._name,
+                    "res_id": binary_ticket.id,
+                }
+            )
+        with self.assertRaises(ValidationError):
+            Attachment.create(
+                {
+                    "name": "null-byte.txt",
+                    "raw": b"text-looking-prefix\x00binary-content",
+                    "res_model": binary_ticket._name,
+                    "res_id": binary_ticket.id,
+                }
+            )
+        with self.assertRaises(ValidationError):
+            Attachment.create(
+                {
+                    "name": "invalid-utf8.txt",
+                    "raw": b"invalid UTF-8: \xff\xfe\xfa",
+                    "res_model": binary_ticket._name,
+                    "res_id": binary_ticket.id,
                 }
             )
 
