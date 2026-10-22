@@ -1,8 +1,6 @@
 import io
 import zipfile
-
 from psycopg2 import IntegrityError
-
 from odoo import fields
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tests import TransactionCase, new_test_user, tagged
@@ -36,28 +34,32 @@ class TestHelpdeskDay5(TransactionCase):
         cls.category = cls.env.ref("it_helpdesk.category_etc")
 
     def _create_ticket(self, user=None, suffix="기본"):
-        return self.env["it.helpdesk.ticket"].with_user(
-            user or self.requester
-        ).create(
-            {
-                "name": f"Day 5 테스트 문의 {suffix}",
-                "description": "Day 5 안정화 검증을 위한 충분히 긴 내용입니다.",
-                "category_id": self.category.id,
-                "priority": "normal",
-                "location": "테스트 부서",
-            }
+        return (
+            self.env["it.helpdesk.ticket"]
+            .with_user(user or self.requester)
+            .create(
+                {
+                    "name": f"Day 5 테스트 문의 {suffix}",
+                    "description": "Day 5 안정화 검증을 위한 충분히 긴 내용입니다.",
+                    "category_id": self.category.id,
+                    "priority": "normal",
+                    "location": "테스트 부서",
+                }
+            )
         )
 
     def _create_attachment(self, ticket, user=None, name="test.txt", raw=b"text"):
-        return self.env["ir.attachment"].with_user(
-            user or self.requester
-        ).create(
-            {
-                "name": name,
-                "raw": raw,
-                "res_model": ticket._name,
-                "res_id": ticket.id,
-            }
+        return (
+            self.env["ir.attachment"]
+            .with_user(user or self.requester)
+            .create(
+                {
+                    "name": name,
+                    "raw": raw,
+                    "res_model": ticket._name,
+                    "res_id": ticket.id,
+                }
+            )
         )
 
     @staticmethod
@@ -69,8 +71,7 @@ class TestHelpdeskDay5(TransactionCase):
         return stream.getvalue()
 
     def test_reference_database_unique_constraint(self):
-        self.cr.execute(
-            """
+        self.cr.execute("""
             SELECT COUNT(*)
               FROM pg_constraint constraint_record
               JOIN pg_class table_record
@@ -79,13 +80,11 @@ class TestHelpdeskDay5(TransactionCase):
                AND constraint_record.contype = 'u'
                AND pg_get_constraintdef(constraint_record.oid)
                    = 'UNIQUE (reference)'
-            """
-        )
+            """)
         if not self.cr.fetchone()[0]:
             self.skipTest(
                 "기존 중복 문의 번호 때문에 DB UNIQUE 제약이 아직 생성되지 않았습니다."
             )
-
         first = self._create_ticket(suffix="DB 고유성 1")
         second = self._create_ticket(suffix="DB 고유성 2")
         first.with_user(self.agent).write({"active": False})
@@ -107,25 +106,20 @@ class TestHelpdeskDay5(TransactionCase):
             message_type="comment",
             subtype_xmlid="mail.mt_comment",
         )
-
         requester_message.with_user(self.requester).write(
             {"body": "요청자가 수정한 댓글"}
         )
         requester_message.with_user(self.agent).write(
             {"body": "담당자가 관리한 요청자 댓글"}
         )
-        agent_message.with_user(self.agent).write(
-            {"body": "담당자가 수정한 댓글"}
-        )
+        agent_message.with_user(self.agent).write({"body": "담당자가 수정한 댓글"})
         agent_message.with_user(self.agent).unlink()
-
         requester_message_to_delete = ticket.with_user(self.requester).message_post(
             body="담당자가 삭제할 요청자 댓글",
             message_type="comment",
             subtype_xmlid="mail.mt_comment",
         )
         requester_message_to_delete.with_user(self.agent).unlink()
-
         another_agent_message = ticket.with_user(self.agent).message_post(
             body="담당자 두 번째 댓글",
             message_type="comment",
@@ -141,7 +135,6 @@ class TestHelpdeskDay5(TransactionCase):
             requester_message.with_user(self.other_requester).sudo().write(
                 {"body": "타인 문의 댓글 수정 우회"}
             )
-
         ticket.sudo()._write_workflow({"state": "closed"})
         for user in (self.requester, self.agent):
             with self.assertRaises(UserError):
@@ -161,7 +154,6 @@ class TestHelpdeskDay5(TransactionCase):
             "other.txt",
             b"other text",
         )
-
         with self.assertRaises(AccessError):
             attachment.with_user(self.other_requester).sudo().write(
                 {"name": "blocked.txt"}
@@ -176,7 +168,6 @@ class TestHelpdeskDay5(TransactionCase):
             attachment.with_user(self.requester).sudo().write(
                 {"res_id": other_ticket.id}
             )
-
         attachment.with_user(self.agent).write({"name": "agent-updated.txt"})
         self.assertEqual(attachment.name, "agent-updated.txt")
         agent_managed_attachment = self._create_attachment(
@@ -186,7 +177,6 @@ class TestHelpdeskDay5(TransactionCase):
         )
         agent_managed_attachment.with_user(self.agent).unlink()
         self.assertFalse(agent_managed_attachment.exists())
-
         own_ticket.sudo()._write_workflow({"state": "closed"})
         for user in (self.requester, self.agent):
             with self.assertRaises(AccessError):
@@ -202,23 +192,25 @@ class TestHelpdeskDay5(TransactionCase):
             employee_ticket.with_context(active_test=False).with_user(
                 self.requester
             ).write({"active": True})
-
         assigned_ticket = self._create_ticket(suffix="배정 후 직원 보관 차단")
         assigned_ticket.with_user(self.agent).action_assign_to(self.agent.id)
         with self.assertRaises(UserError):
             assigned_ticket.with_user(self.requester).write({"active": False})
-
         ticket = self._create_ticket(suffix="관계 보존")
         message = ticket.with_user(self.requester).message_post(body="보존할 댓글")
         attachment = self._create_attachment(ticket, name="preserve.txt")
-        history = self.env["it.helpdesk.history"].sudo().create(
-            {
-                "ticket_id": ticket.id,
-                "change_type": "state",
-                "old_value": "접수",
-                "new_value": "종료",
-                "description": "보관·복원 관계 보존 테스트",
-            }
+        history = (
+            self.env["it.helpdesk.history"]
+            .sudo()
+            .create(
+                {
+                    "ticket_id": ticket.id,
+                    "change_type": "state",
+                    "old_value": "접수",
+                    "new_value": "종료",
+                    "description": "보관·복원 관계 보존 테스트",
+                }
+            )
         )
         resolved_date = fields.Datetime.now()
         ticket.sudo()._write_workflow(
@@ -237,7 +229,6 @@ class TestHelpdeskDay5(TransactionCase):
             ticket.resolved_date,
             ticket.closed_date,
         )
-
         ticket.with_user(self.agent).write({"active": False})
         self.assertFalse(ticket.active)
         self.assertTrue(message.exists())
@@ -245,7 +236,6 @@ class TestHelpdeskDay5(TransactionCase):
         self.assertTrue(history.exists())
         with self.assertRaises(AccessError):
             attachment.with_user(self.agent).unlink()
-
         ticket.with_context(active_test=False).with_user(self.agent).write(
             {"active": True}
         )
@@ -278,7 +268,6 @@ class TestHelpdeskDay5(TransactionCase):
         for index, (name, raw) in enumerate(valid_files.items()):
             ticket = self._create_ticket(suffix=f"정상 형식 {index}")
             self.assertTrue(self._create_attachment(ticket, name=name, raw=raw))
-
         mismatches = {
             "fake.jpg": b"%PDF-1.4\nnot a jpeg",
             "fake.png": b"%PDF-1.4\nnot a png",
@@ -300,7 +289,6 @@ class TestHelpdeskDay5(TransactionCase):
                 name="oversized.txt",
                 raw=b"x" * (10 * 1024 * 1024 + 1),
             )
-
         count_ticket = self._create_ticket(suffix="개수 제한")
         for index in range(5):
             self._create_attachment(
@@ -310,15 +298,18 @@ class TestHelpdeskDay5(TransactionCase):
             )
         with self.assertRaises(ValidationError):
             self._create_attachment(count_ticket, name="sixth.txt")
-
         chatter_ticket = self._create_ticket(suffix="Chatter 첨부")
-        pending = self.env["ir.attachment"].with_user(self.requester).create(
-            {
-                "name": "chatter.txt",
-                "raw": "정상 Chatter 첨부\r\n".encode("utf-8"),
-                "res_model": "mail.compose.message",
-                "res_id": 0,
-            }
+        pending = (
+            self.env["ir.attachment"]
+            .with_user(self.requester)
+            .create(
+                {
+                    "name": "chatter.txt",
+                    "raw": "정상 Chatter 첨부\r\n".encode("utf-8"),
+                    "res_model": "mail.compose.message",
+                    "res_id": 0,
+                }
+            )
         )
         message = chatter_ticket.with_user(self.requester).message_post(
             body="첨부파일을 포함한 정상 댓글",
@@ -346,14 +337,12 @@ class TestHelpdeskDay5(TransactionCase):
             self.other_requester,
             "타인 대시보드 비공개",
         )
-        other.sudo()._write_workflow(
-            {"state": "in_progress", "priority": "urgent"}
+        other.sudo()._write_workflow({"state": "in_progress", "priority": "urgent"})
+        data = (
+            self.env["it.helpdesk.ticket"]
+            .with_user(self.requester)
+            .get_dashboard_data()
         )
-
-        data = self.env["it.helpdesk.ticket"].with_user(
-            self.requester
-        ).get_dashboard_data()
-
         self.assertEqual(data["role"], "employee")
         self.assertEqual(
             self._kpi_map(data),
@@ -371,18 +360,15 @@ class TestHelpdeskDay5(TransactionCase):
         self.assertNotIn(archived.name, str(data))
         self.assertEqual(data["priority_distribution"], [])
         self.assertEqual(data["urgent_tickets"], [])
-
         with self.assertRaises(AccessError):
             other.with_user(self.requester).check_access("read")
         with self.assertRaises(AccessError):
-            self.env["it.helpdesk.ticket"].with_user(
-                self.outsider
-            ).get_dashboard_data()
+            self.env["it.helpdesk.ticket"].with_user(self.outsider).get_dashboard_data()
 
     def test_agent_dashboard_aggregates_all_active_tickets(self):
-        initial_data = self.env["it.helpdesk.ticket"].with_user(
-            self.agent
-        ).get_dashboard_data()
+        initial_data = (
+            self.env["it.helpdesk.ticket"].with_user(self.agent).get_dashboard_data()
+        )
         initial_kpis = self._kpi_map(initial_data)
         initial_states = self._distribution_map(
             initial_data,
@@ -411,18 +397,13 @@ class TestHelpdeskDay5(TransactionCase):
                 values["assigned_user_id"] = self.agent.id
             ticket.sudo()._write_workflow(values)
             tickets.append(ticket)
-
         archived = self._create_ticket(
             self.other_requester,
             "담당자 집계 보관 제외",
         )
         archived.with_user(self.agent).write({"active": False})
         own_ticket = self._create_ticket(self.agent, "담당자 본인 문의 접근")
-
-        data = self.env["it.helpdesk.ticket"].with_user(
-            self.agent
-        ).get_dashboard_data()
-
+        data = self.env["it.helpdesk.ticket"].with_user(self.agent).get_dashboard_data()
         self.assertEqual(data["role"], "agent")
         self.assertEqual(
             {
@@ -433,10 +414,7 @@ class TestHelpdeskDay5(TransactionCase):
         )
         state_counts = self._distribution_map(data, "state_distribution")
         self.assertEqual(
-            {
-                key: value - initial_states[key]
-                for key, value in state_counts.items()
-            },
+            {key: value - initial_states[key] for key, value in state_counts.items()},
             {
                 "received": 2,
                 "assigned": 1,
@@ -457,15 +435,47 @@ class TestHelpdeskDay5(TransactionCase):
             },
             {"low": 2, "normal": 3, "high": 2, "urgent": 1},
         )
+        ticket_model = self.env["it.helpdesk.ticket"].with_user(self.agent)
+        expected_recent = ticket_model.search(
+            [("active", "=", True)],
+            order="create_date desc, id desc",
+            limit=5,
+        )
         self.assertEqual(len(data["recent_tickets"]), 5)
         self.assertEqual(
+            [ticket["id"] for ticket in data["recent_tickets"]],
+            expected_recent.ids,
+        )
+
+        urgent_domain = [
+            ("active", "=", True),
+            ("priority", "=", "urgent"),
+            (
+                "state",
+                "in",
+                [
+                    "received",
+                    "assigned",
+                    "in_progress",
+                    "reopen_requested",
+                    "reopened_in_progress",
+                ],
+            ),
+        ]
+        expected_urgent = ticket_model.search(
+            urgent_domain,
+            order="create_date desc, id desc",
+            limit=5,
+        )
+        self.assertEqual(
             [ticket["id"] for ticket in data["urgent_tickets"]],
-            [tickets[0].id],
+            expected_urgent.ids,
         )
         self.assertNotIn(archived.name, str(data))
-
-        my_tickets = self.env["it.helpdesk.ticket"].with_user(self.agent).search(
-            [("requester_id", "=", self.agent.id)]
+        my_tickets = (
+            self.env["it.helpdesk.ticket"]
+            .with_user(self.agent)
+            .search([("requester_id", "=", self.agent.id)])
         )
         self.assertIn(own_ticket, my_tickets)
 
@@ -475,18 +485,15 @@ class TestHelpdeskDay5(TransactionCase):
             login="helpdesk_day5_empty_dashboard",
             groups="it_helpdesk.group_it_helpdesk_user",
         )
-        data = self.env["it.helpdesk.ticket"].with_user(
-            empty_employee
-        ).get_dashboard_data()
+        data = (
+            self.env["it.helpdesk.ticket"]
+            .with_user(empty_employee)
+            .get_dashboard_data()
+        )
         self.assertEqual(self._kpi_map(data)["total"], 0)
         self.assertFalse(data["recent_tickets"])
-        self.assertFalse(any(
-            item["count"] for item in data["state_distribution"]
-        ))
-
-        dashboard_action = self.env.ref(
-            "it_helpdesk.action_it_helpdesk_dashboard"
-        )
+        self.assertFalse(any(item["count"] for item in data["state_distribution"]))
+        dashboard_action = self.env.ref("it_helpdesk.action_it_helpdesk_dashboard")
         dashboard_menu = self.env.ref("it_helpdesk.menu_it_helpdesk_dashboard")
         employee_group = self.env.ref("it_helpdesk.group_it_helpdesk_user")
         self.assertEqual(dashboard_action.tag, "it_helpdesk.dashboard")
