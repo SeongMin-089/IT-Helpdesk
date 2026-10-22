@@ -245,7 +245,9 @@ class HelpdeskTicket(models.Model):
                 reference = self.env["ir.sequence"].next_by_code(
                     "it.helpdesk.ticket"
                 )
-                if reference and not self.sudo().search_count(
+                if reference and not self.sudo().with_context(
+                    active_test=False
+                ).search_count(
                     [("reference", "=", reference)],
                     limit=1,
                 ):
@@ -261,13 +263,21 @@ class HelpdeskTicket(models.Model):
     @api.constrains("reference")
     def _check_reference_unique(self):
         for ticket in self.filtered(lambda record: record.reference):
-            if self.sudo().search_count(
-                [
-                    ("reference", "=", ticket.reference),
-                    ("id", "!=", ticket.id),
-                ],
-                limit=1,
-            ):
+            # ORM search_count() flushes the pending duplicate write before
+            # this Python validation can return its friendly error. Query the
+            # stored rows directly and leave the DB constraint as the final
+            # concurrency guard.
+            self.env.cr.execute(
+                """
+                SELECT 1
+                  FROM it_helpdesk_ticket
+                 WHERE reference = %s
+                   AND id != %s
+                 LIMIT 1
+                """,
+                [ticket.reference, ticket.id],
+            )
+            if self.env.cr.fetchone():
                 raise ValidationError("문의 번호는 중복될 수 없습니다.")
 
     # 문의 등록 및 수정 시 입력값 검증

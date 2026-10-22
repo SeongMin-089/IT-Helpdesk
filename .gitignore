@@ -10,6 +10,7 @@ __pycache__/
 odoo.conf
 *.env
 .env.*
+/backups/
 
 # IDE and temporary files
 .vscode/

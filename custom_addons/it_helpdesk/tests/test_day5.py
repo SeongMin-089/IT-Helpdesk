@@ -83,6 +83,7 @@ class TestHelpdeskDay5(TransactionCase):
 
         first = self._create_ticket(suffix="DB 고유성 1")
         second = self._create_ticket(suffix="DB 고유성 2")
+        first.with_user(self.agent).write({"active": False})
         with self.assertRaises(IntegrityError), self.cr.savepoint():
             self.cr.execute(
                 "UPDATE it_helpdesk_ticket SET reference = %s WHERE id = %s",
