@@ -40,7 +40,7 @@
         <field name="view_mode">list,form</field>
         <field name="domain">[('requester_id', '=', uid)]</field>
         <field name="context">{'default_requester_id': uid}</field>
-        <field name="search_view_id" ref="view_it_helpdesk_ticket_search" />
+        <field name="search_view_id" ref="view_it_helpdesk_my_ticket_search" />
     </record>
 
     <!-- 직원용 List View 연결 -->
@@ -75,6 +75,7 @@
         <field name="res_model">it.helpdesk.ticket</field>
         <field name="view_mode">list,form</field>
         <field name="domain">[('assigned_user_id', '=', False)]</field>
+        <field name="search_view_id" ref="view_it_helpdesk_ticket_search" />
     </record>
 
     <!-- 기존 F-03 전체 문의 List View 재사용 -->

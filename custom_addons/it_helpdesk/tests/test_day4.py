@@ -5,6 +5,7 @@ from lxml import etree
 
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tests import TransactionCase, new_test_user, tagged
+from odoo.tools.safe_eval import safe_eval
 
 
 @tagged("post_install", "-at_install", "it_helpdesk_day4")
@@ -126,6 +127,114 @@ class TestHelpdeskDay4(TransactionCase):
             ticket.with_user(self.agent).write({"category_id": self.category.id})
         with self.assertRaises(ValidationError):
             ticket.sudo()._write_workflow({"category_id": inactive_category.id})
+
+    def test_ticket_search_views_and_menu_actions(self):
+        state_filters = {
+            "received",
+            "assigned",
+            "in_progress",
+            "reopen_requested",
+            "reopened_in_progress",
+            "resolved",
+            "closed",
+        }
+        priority_filters = {
+            "priority_low",
+            "priority_normal",
+            "priority_high",
+            "urgent",
+        }
+
+        my_search = self.env.ref("it_helpdesk.view_it_helpdesk_my_ticket_search")
+        my_arch = etree.fromstring(my_search.arch_db.encode())
+        self.assertEqual(
+            set(my_arch.xpath("/search/field/@name")),
+            {
+                "reference",
+                "name",
+                "category_id",
+                "state",
+                "priority",
+                "assigned_user_id",
+            },
+        )
+        self.assertEqual(
+            set(my_arch.xpath("/search/filter/@name")),
+            state_filters | priority_filters,
+        )
+        self.assertEqual(
+            set(my_arch.xpath("/search/group/filter/@name")),
+            {"group_by_category", "group_by_state", "group_by_priority"},
+        )
+
+        management_search = self.env.ref(
+            "it_helpdesk.view_it_helpdesk_ticket_search"
+        )
+        management_arch = etree.fromstring(management_search.arch_db.encode())
+        self.assertEqual(
+            set(management_arch.xpath("/search/field/@name")),
+            {
+                "reference",
+                "name",
+                "requester_id",
+                "category_id",
+                "state",
+                "priority",
+                "assigned_user_id",
+            },
+        )
+        self.assertEqual(
+            set(management_arch.xpath("/search/filter/@name")),
+            state_filters | priority_filters | {"my_assigned", "unassigned"},
+        )
+        self.assertEqual(
+            set(management_arch.xpath("/search/group/filter/@name")),
+            {
+                "group_by_category",
+                "group_by_state",
+                "group_by_priority",
+                "group_by_assigned_user",
+            },
+        )
+
+        my_action = self.env.ref("it_helpdesk.action_it_helpdesk_my_tickets")
+        self.assertEqual(my_action.search_view_id, my_search)
+        for action_xmlid in (
+            "it_helpdesk.action_it_helpdesk_ticket",
+            "it_helpdesk.action_it_helpdesk_unassigned_tickets",
+            "it_helpdesk.action_it_helpdesk_archived_tickets",
+        ):
+            self.assertEqual(
+                self.env.ref(action_xmlid).search_view_id,
+                management_search,
+            )
+
+        my_menu = self.env.ref("it_helpdesk.menu_it_helpdesk_my_tickets")
+        user_group = self.env.ref("it_helpdesk.group_it_helpdesk_user")
+        self.assertIn(user_group, my_menu.group_ids)
+        self.assertTrue(
+            self.requester.has_group("it_helpdesk.group_it_helpdesk_user")
+        )
+        self.assertTrue(
+            self.agent.has_group("it_helpdesk.group_it_helpdesk_user")
+        )
+
+        requester_ticket = self._create_ticket(self.requester, "직원 내 문의")
+        agent_ticket = self._create_ticket(self.agent, "담당자 내 문의")
+        other_ticket = self._create_ticket(self.other_requester, "다른 직원 문의")
+        for user, own_ticket in (
+            (self.requester, requester_ticket),
+            (self.agent, agent_ticket),
+        ):
+            action_domain = safe_eval(my_action.domain, {"uid": user.id})
+            visible_tickets = self.env["it.helpdesk.ticket"].with_user(user).search(
+                action_domain
+            )
+            self.assertIn(own_ticket, visible_tickets)
+            self.assertNotIn(other_ticket, visible_tickets)
+            self.assertTrue(
+                all(ticket.requester_id == user for ticket in visible_tickets)
+            )
 
     def test_attachment_type_size_count_and_owner(self):
         ticket = self._create_ticket(suffix="첨부 제한")

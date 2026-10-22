@@ -296,9 +296,104 @@
         </field>
     </record>
 
-    <!-- 공통 검색 화면 -->
+    <!-- 직원·담당자 공용 내 문의 검색 화면 -->
+    <record id="view_it_helpdesk_my_ticket_search" model="ir.ui.view">
+        <field name="name">it.helpdesk.my.ticket.search</field>
+        <field name="model">it.helpdesk.ticket</field>
+        <field name="arch" type="xml">
+            <search string="내 문의 검색">
+                <field name="reference" />
+                <field name="name" />
+                <field name="category_id" />
+                <field name="state" />
+                <field name="priority" />
+                <field name="assigned_user_id" />
+
+                <separator />
+
+                <filter
+                    name="received"
+                    string="접수"
+                    domain="[('state', '=', 'received')]"
+                />
+                <filter
+                    name="assigned"
+                    string="배정"
+                    domain="[('state', '=', 'assigned')]"
+                />
+                <filter
+                    name="in_progress"
+                    string="처리 중"
+                    domain="[('state', '=', 'in_progress')]"
+                />
+                <filter
+                    name="reopen_requested"
+                    string="재처리 요청"
+                    domain="[('state', '=', 'reopen_requested')]"
+                />
+                <filter
+                    name="reopened_in_progress"
+                    string="재처리 중"
+                    domain="[('state', '=', 'reopened_in_progress')]"
+                />
+                <filter
+                    name="resolved"
+                    string="해결"
+                    domain="[('state', '=', 'resolved')]"
+                />
+                <filter
+                    name="closed"
+                    string="종료"
+                    domain="[('state', '=', 'closed')]"
+                />
+
+                <separator />
+
+                <filter
+                    name="priority_low"
+                    string="낮음"
+                    domain="[('priority', '=', 'low')]"
+                />
+                <filter
+                    name="priority_normal"
+                    string="보통"
+                    domain="[('priority', '=', 'normal')]"
+                />
+                <filter
+                    name="priority_high"
+                    string="높음"
+                    domain="[('priority', '=', 'high')]"
+                />
+                <filter
+                    name="urgent"
+                    string="긴급"
+                    domain="[('priority', '=', 'urgent')]"
+                />
+
+                <group>
+                    <filter
+                        name="group_by_category"
+                        string="유형별"
+                        context="{'group_by': 'category_id'}"
+                    />
+                    <filter
+                        name="group_by_state"
+                        string="상태별"
+                        context="{'group_by': 'state'}"
+                    />
+                    <filter
+                        name="group_by_priority"
+                        string="긴급도별"
+                        context="{'group_by': 'priority'}"
+                    />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- IT 담당자 관리용 검색 화면 -->
     <record id="view_it_helpdesk_ticket_search" model="ir.ui.view">
-        <field name="name">it.helpdesk.ticket.search</field>
+        <field name="name">it.helpdesk.ticket.management.search</field>
         <field name="model">it.helpdesk.ticket</field>
         <field name="arch" type="xml">
             <search string="문의 검색">
