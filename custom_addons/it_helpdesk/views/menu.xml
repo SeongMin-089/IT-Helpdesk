@@ -15,6 +15,20 @@
         sequence="10"
     />
 
+    <record id="action_it_helpdesk_dashboard" model="ir.actions.client">
+        <field name="name">대시보드</field>
+        <field name="tag">it_helpdesk.dashboard</field>
+    </record>
+
+    <menuitem
+        id="menu_it_helpdesk_dashboard"
+        name="대시보드"
+        parent="menu_it_helpdesk_root"
+        action="action_it_helpdesk_dashboard"
+        groups="it_helpdesk.group_it_helpdesk_user"
+        sequence="1"
+    />
+
     <!-- 문의 관리 메뉴 -->
     <menuitem
         id="menu_it_helpdesk_tickets"

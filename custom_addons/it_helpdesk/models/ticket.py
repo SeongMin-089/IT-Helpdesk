@@ -17,6 +17,22 @@ class HelpdeskTicket(models.Model):
         "문의 번호는 중복될 수 없습니다.",
     )
 
+    _dashboard_states = [
+        ("received", "접수"),
+        ("assigned", "배정"),
+        ("in_progress", "처리 중"),
+        ("reopen_requested", "재처리 요청"),
+        ("reopened_in_progress", "재처리 중"),
+        ("resolved", "해결"),
+        ("closed", "종료"),
+    ]
+    _dashboard_priorities = [
+        ("low", "낮음"),
+        ("normal", "보통"),
+        ("high", "높음"),
+        ("urgent", "긴급"),
+    ]
+
     # 문의 기본 정보
     reference = fields.Char(
         string="문의 번호",
@@ -126,6 +142,204 @@ class HelpdeskTicket(models.Model):
         string="변경 이력",
         readonly=True,
     )
+
+    @api.model
+    def get_dashboard_data(self):
+        """Return role-scoped dashboard data without bypassing record rules."""
+        is_agent = self.env.user.has_group("it_helpdesk.group_it_helpdesk_agent")
+        is_employee = self.env.user.has_group("it_helpdesk.group_it_helpdesk_user")
+        if not is_agent and not is_employee:
+            raise AccessError("IT Helpdesk 대시보드 접근 권한이 없습니다.")
+
+        base_domain = [("active", "=", True)]
+        if not is_agent:
+            base_domain.append(("requester_id", "=", self.env.uid))
+
+        def count(extra_domain=None):
+            return self.search_count(base_domain + (extra_domain or []))
+
+        def serialize(tickets):
+            return [
+                {
+                    "id": ticket.id,
+                    "reference": ticket.reference,
+                    "name": ticket.name,
+                    "state": ticket.state,
+                    "state_label": dict(self._dashboard_states).get(ticket.state),
+                    "priority": ticket.priority,
+                    "priority_label": dict(self._dashboard_priorities).get(
+                        ticket.priority
+                    ),
+                    "create_date": fields.Datetime.to_string(ticket.create_date),
+                    "requester_name": ticket.requester_id.name,
+                    "assigned_user_name": ticket.assigned_user_id.name or False,
+                }
+                for ticket in tickets
+            ]
+
+        state_distribution = [
+            {
+                "key": state,
+                "label": label,
+                "count": count([("state", "=", state)]),
+            }
+            for state, label in self._dashboard_states
+        ]
+        recent_tickets = self.search(
+            base_domain,
+            order="create_date desc, id desc",
+            limit=5,
+        )
+
+        if not is_agent:
+            return {
+                "role": "employee",
+                "kpis": [
+                    {
+                        "key": "total",
+                        "label": "내 전체 문의",
+                        "count": count(),
+                        "domain": [],
+                    },
+                    {
+                        "key": "processing",
+                        "label": "처리 중",
+                        "count": count(
+                            [
+                                (
+                                    "state",
+                                    "in",
+                                    [
+                                        "assigned",
+                                        "in_progress",
+                                        "reopened_in_progress",
+                                    ],
+                                )
+                            ]
+                        ),
+                        "domain": [
+                            [
+                                "state",
+                                "in",
+                                [
+                                    "assigned",
+                                    "in_progress",
+                                    "reopened_in_progress",
+                                ],
+                            ]
+                        ],
+                    },
+                    {
+                        "key": "resolved",
+                        "label": "해결 대기",
+                        "count": count([("state", "=", "resolved")]),
+                        "domain": [["state", "=", "resolved"]],
+                    },
+                    {
+                        "key": "closed",
+                        "label": "종료 완료",
+                        "count": count([("state", "=", "closed")]),
+                        "domain": [["state", "=", "closed"]],
+                    },
+                ],
+                "state_distribution": state_distribution,
+                "priority_distribution": [],
+                "recent_tickets": serialize(recent_tickets),
+                "urgent_tickets": [],
+            }
+
+        unresolved_states = [
+            "received",
+            "assigned",
+            "in_progress",
+            "reopen_requested",
+            "reopened_in_progress",
+        ]
+        priority_distribution = [
+            {
+                "key": priority,
+                "label": label,
+                "count": count([("priority", "=", priority)]),
+            }
+            for priority, label in self._dashboard_priorities
+        ]
+        urgent_domain = [
+            ("priority", "=", "urgent"),
+            ("state", "in", unresolved_states),
+        ]
+        urgent_tickets = self.search(
+            base_domain + urgent_domain,
+            order="create_date desc, id desc",
+            limit=5,
+        )
+        return {
+            "role": "agent",
+            "kpis": [
+                {
+                    "key": "total",
+                    "label": "전체 문의",
+                    "count": count(),
+                    "domain": [],
+                },
+                {
+                    "key": "unassigned",
+                    "label": "미배정",
+                    "count": count(
+                        [
+                            ("assigned_user_id", "=", False),
+                            ("state", "!=", "closed"),
+                        ]
+                    ),
+                    "domain": [
+                        ["assigned_user_id", "=", False],
+                        ["state", "!=", "closed"],
+                    ],
+                },
+                {
+                    "key": "processing",
+                    "label": "진행 중",
+                    "count": count(
+                        [
+                            (
+                                "state",
+                                "in",
+                                [
+                                    "assigned",
+                                    "in_progress",
+                                    "reopen_requested",
+                                    "reopened_in_progress",
+                                ],
+                            )
+                        ]
+                    ),
+                    "domain": [
+                        [
+                            "state",
+                            "in",
+                            [
+                                "assigned",
+                                "in_progress",
+                                "reopen_requested",
+                                "reopened_in_progress",
+                            ],
+                        ]
+                    ],
+                },
+                {
+                    "key": "urgent",
+                    "label": "긴급 미해결",
+                    "count": count(urgent_domain),
+                    "domain": [
+                        ["priority", "=", "urgent"],
+                        ["state", "in", unresolved_states],
+                    ],
+                },
+            ],
+            "state_distribution": state_distribution,
+            "priority_distribution": priority_distribution,
+            "recent_tickets": serialize(recent_tickets),
+            "urgent_tickets": serialize(urgent_tickets),
+        }
 
     # Chatter 댓글 작성 권한 및 종료 상태 검증
     def message_post(self, **kwargs):

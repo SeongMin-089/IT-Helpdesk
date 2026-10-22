@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="it_helpdesk.Dashboard">
+        <div class="o_it_helpdesk_dashboard">
+            <div t-if="state.loading" class="o_it_helpdesk_loading">
+                <i class="fa fa-spinner fa-spin" aria-hidden="true" />
+                <span>문의 현황을 불러오는 중입니다.</span>
+            </div>
+
+            <div t-elif="state.error" class="o_it_helpdesk_error" role="alert">
+                <i class="fa fa-exclamation-circle" aria-hidden="true" />
+                <span t-esc="state.error" />
+                <button type="button" class="btn btn-primary" t-on-click="loadDashboard">
+                    다시 시도
+                </button>
+            </div>
+
+            <t t-elif="state.data">
+                <header class="o_it_helpdesk_header">
+                    <div>
+                        <p class="o_it_helpdesk_eyebrow">IT HELPDESK</p>
+                        <h1 t-esc="title" />
+                        <p class="o_it_helpdesk_subtitle" t-esc="subtitle" />
+                    </div>
+                    <button
+                        type="button"
+                        class="btn btn-light o_it_helpdesk_refresh"
+                        t-on-click="loadDashboard"
+                        title="새로고침"
+                    >
+                        <i class="fa fa-refresh" aria-hidden="true" />
+                        새로고침
+                    </button>
+                </header>
+
+                <section class="o_it_helpdesk_kpi_grid" aria-label="문의 핵심 지표">
+                    <button
+                        t-foreach="state.data.kpis"
+                        t-as="kpi"
+                        t-key="kpi.key"
+                        type="button"
+                        t-att-class="'o_it_helpdesk_kpi_card o_it_helpdesk_kpi_' + kpi.key"
+                        t-on-click="() => this.openTickets(kpi.domain)"
+                    >
+                        <span class="o_it_helpdesk_kpi_label" t-esc="kpi.label" />
+                        <strong class="o_it_helpdesk_kpi_value" t-esc="kpi.count" />
+                        <span class="o_it_helpdesk_kpi_link">
+                            문의 보기 <i class="fa fa-arrow-right" aria-hidden="true" />
+                        </span>
+                    </button>
+                </section>
+
+                <div t-att-class="isAgent ? 'o_it_helpdesk_content_grid o_it_helpdesk_agent_grid' : 'o_it_helpdesk_content_grid'">
+                    <section class="o_it_helpdesk_panel">
+                        <div class="o_it_helpdesk_panel_header">
+                            <div>
+                                <h2>상태별 문의 분포</h2>
+                                <p>활성 문의의 현재 처리 단계입니다.</p>
+                            </div>
+                        </div>
+                        <div class="o_it_helpdesk_distribution">
+                            <button
+                                t-foreach="state.data.state_distribution"
+                                t-as="item"
+                                t-key="item.key"
+                                type="button"
+                                class="o_it_helpdesk_distribution_row"
+                                t-on-click="() => this.openTickets([['state', '=', item.key]])"
+                            >
+                                <span class="o_it_helpdesk_distribution_label" t-esc="item.label" />
+                                <span class="o_it_helpdesk_bar_track">
+                                    <span
+                                        class="o_it_helpdesk_bar_fill"
+                                        t-att-style="'width: ' + this.distributionPercent(item, state.data.kpis[0].count) + '%'"
+                                    />
+                                </span>
+                                <strong t-esc="item.count" />
+                            </button>
+                        </div>
+                    </section>
+
+                    <section t-if="isAgent" class="o_it_helpdesk_panel">
+                        <div class="o_it_helpdesk_panel_header">
+                            <div>
+                                <h2>긴급도별 문의 분포</h2>
+                                <p>업무 우선순위별 활성 문의입니다.</p>
+                            </div>
+                        </div>
+                        <div class="o_it_helpdesk_priority_grid">
+                            <button
+                                t-foreach="state.data.priority_distribution"
+                                t-as="item"
+                                t-key="item.key"
+                                type="button"
+                                t-att-class="'o_it_helpdesk_priority_box ' + this.priorityClass(item.key)"
+                                t-on-click="() => this.openTickets([['priority', '=', item.key]])"
+                            >
+                                <span t-esc="item.label" />
+                                <strong t-esc="item.count" />
+                            </button>
+                        </div>
+                    </section>
+
+                    <section class="o_it_helpdesk_panel o_it_helpdesk_ticket_panel">
+                        <div class="o_it_helpdesk_panel_header">
+                            <div>
+                                <h2>최근 문의</h2>
+                                <p>가장 최근에 등록된 활성 문의 5건입니다.</p>
+                            </div>
+                            <button type="button" class="btn btn-link" t-on-click="() => this.openTickets([])">
+                                전체 보기
+                            </button>
+                        </div>
+                        <div t-if="state.data.recent_tickets.length" class="o_it_helpdesk_ticket_list">
+                            <button
+                                t-foreach="state.data.recent_tickets"
+                                t-as="ticket"
+                                t-key="ticket.id"
+                                type="button"
+                                class="o_it_helpdesk_ticket_row"
+                                t-on-click="() => this.openTicket(ticket.id)"
+                            >
+                                <span class="o_it_helpdesk_ticket_reference" t-esc="ticket.reference" />
+                                <span class="o_it_helpdesk_ticket_main">
+                                    <strong t-esc="ticket.name" />
+                                    <small t-if="isAgent" t-esc="ticket.requester_name" />
+                                </span>
+                                <span class="o_it_helpdesk_status" t-esc="ticket.state_label" />
+                                <span t-att-class="'o_it_helpdesk_priority_badge ' + this.priorityClass(ticket.priority)" t-esc="ticket.priority_label" />
+                                <time t-esc="this.formatCreatedAt(ticket.create_date)" />
+                            </button>
+                        </div>
+                        <div t-else="" class="o_it_helpdesk_empty">
+                            <i class="fa fa-inbox" aria-hidden="true" />
+                            <span>표시할 문의가 없습니다.</span>
+                        </div>
+                    </section>
+
+                    <section t-if="isAgent" class="o_it_helpdesk_panel o_it_helpdesk_ticket_panel">
+                        <div class="o_it_helpdesk_panel_header">
+                            <div>
+                                <h2>긴급 미해결 문의</h2>
+                                <p>즉시 확인이 필요한 최근 문의 5건입니다.</p>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn btn-link"
+                                t-on-click="() => this.openTickets([['priority', '=', 'urgent'], ['state', 'in', ['received', 'assigned', 'in_progress', 'reopen_requested', 'reopened_in_progress']]])"
+                            >
+                                전체 보기
+                            </button>
+                        </div>
+                        <div t-if="state.data.urgent_tickets.length" class="o_it_helpdesk_ticket_list">
+                            <button
+                                t-foreach="state.data.urgent_tickets"
+                                t-as="ticket"
+                                t-key="ticket.id"
+                                type="button"
+                                class="o_it_helpdesk_ticket_row"
+                                t-on-click="() => this.openTicket(ticket.id)"
+                            >
+                                <span class="o_it_helpdesk_ticket_reference" t-esc="ticket.reference" />
+                                <span class="o_it_helpdesk_ticket_main">
+                                    <strong t-esc="ticket.name" />
+                                    <small t-esc="ticket.requester_name" />
+                                </span>
+                                <span class="o_it_helpdesk_status" t-esc="ticket.state_label" />
+                                <span class="o_it_helpdesk_priority_badge o_it_helpdesk_priority_urgent">긴급</span>
+                                <time t-esc="this.formatCreatedAt(ticket.create_date)" />
+                            </button>
+                        </div>
+                        <div t-else="" class="o_it_helpdesk_empty">
+                            <i class="fa fa-check-circle" aria-hidden="true" />
+                            <span>긴급 미해결 문의가 없습니다.</span>
+                        </div>
+                    </section>
+                </div>
+
+                <footer class="o_it_helpdesk_shortcuts">
+                    <button t-if="!isAgent" type="button" class="btn btn-primary" t-on-click="createTicket">
+                        <i class="fa fa-plus" aria-hidden="true" /> 새 문의 등록
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" t-on-click="() => this.openTickets([])">
+                        <i class="fa fa-list" aria-hidden="true" />
+                        <t t-if="isAgent">전체 문의 목록</t>
+                        <t t-else="">내 문의 목록</t>
+                    </button>
+                    <button t-if="isAgent" type="button" class="btn btn-outline-primary" t-on-click="openUnassignedTickets">
+                        <i class="fa fa-user-times" aria-hidden="true" /> 미배정 문의
+                    </button>
+                </footer>
+            </t>
+        </div>
+    </t>
+</templates>

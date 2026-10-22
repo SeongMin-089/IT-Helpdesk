@@ -22,6 +22,13 @@
         "views/menu.xml",
     ],
     "application": True,
+    "assets": {
+        "web.assets_backend": [
+            "it_helpdesk/static/src/dashboard/dashboard.js",
+            "it_helpdesk/static/src/dashboard/dashboard.xml",
+            "it_helpdesk/static/src/dashboard/dashboard.scss",
+        ],
+    },
     "installable": True,
     "auto_install": False,
     "license": "LGPL-3",

@@ -28,6 +28,11 @@ class TestHelpdeskDay5(TransactionCase):
             login="helpdesk_day5_agent",
             groups="it_helpdesk.group_it_helpdesk_agent",
         )
+        cls.outsider = new_test_user(
+            cls.env,
+            login="helpdesk_day5_outsider",
+            groups="base.group_user",
+        )
         cls.category = cls.env.ref("it_helpdesk.category_etc")
 
     def _create_ticket(self, user=None, suffix="기본"):
@@ -322,3 +327,168 @@ class TestHelpdeskDay5(TransactionCase):
         self.assertEqual(pending.res_model, chatter_ticket._name)
         self.assertEqual(pending.res_id, chatter_ticket.id)
         self.assertIn(pending, message.attachment_ids)
+
+    @staticmethod
+    def _kpi_map(data):
+        return {item["key"]: item["count"] for item in data["kpis"]}
+
+    @staticmethod
+    def _distribution_map(data, field):
+        return {item["key"]: item["count"] for item in data[field]}
+
+    def test_employee_dashboard_is_private_and_excludes_archived(self):
+        own_received = self._create_ticket(suffix="직원 대시보드 접수")
+        own_resolved = self._create_ticket(suffix="직원 대시보드 해결")
+        own_resolved.sudo()._write_workflow({"state": "resolved"})
+        archived = self._create_ticket(suffix="직원 대시보드 보관")
+        archived.with_user(self.requester).write({"active": False})
+        other = self._create_ticket(
+            self.other_requester,
+            "타인 대시보드 비공개",
+        )
+        other.sudo()._write_workflow(
+            {"state": "in_progress", "priority": "urgent"}
+        )
+
+        data = self.env["it.helpdesk.ticket"].with_user(
+            self.requester
+        ).get_dashboard_data()
+
+        self.assertEqual(data["role"], "employee")
+        self.assertEqual(
+            self._kpi_map(data),
+            {"total": 2, "processing": 0, "resolved": 1, "closed": 0},
+        )
+        states = self._distribution_map(data, "state_distribution")
+        self.assertEqual(states["received"], 1)
+        self.assertEqual(states["resolved"], 1)
+        self.assertEqual(sum(states.values()), 2)
+        self.assertEqual(
+            {ticket["id"] for ticket in data["recent_tickets"]},
+            {own_received.id, own_resolved.id},
+        )
+        self.assertNotIn(other.name, str(data))
+        self.assertNotIn(archived.name, str(data))
+        self.assertEqual(data["priority_distribution"], [])
+        self.assertEqual(data["urgent_tickets"], [])
+
+        with self.assertRaises(AccessError):
+            other.with_user(self.requester).check_access("read")
+        with self.assertRaises(AccessError):
+            self.env["it.helpdesk.ticket"].with_user(
+                self.outsider
+            ).get_dashboard_data()
+
+    def test_agent_dashboard_aggregates_all_active_tickets(self):
+        initial_data = self.env["it.helpdesk.ticket"].with_user(
+            self.agent
+        ).get_dashboard_data()
+        initial_kpis = self._kpi_map(initial_data)
+        initial_states = self._distribution_map(
+            initial_data,
+            "state_distribution",
+        )
+        initial_priorities = self._distribution_map(
+            initial_data,
+            "priority_distribution",
+        )
+        states = [
+            "received",
+            "assigned",
+            "in_progress",
+            "reopen_requested",
+            "reopened_in_progress",
+            "resolved",
+            "closed",
+        ]
+        priorities = ["urgent", "low", "normal", "high", "low", "normal", "high"]
+        tickets = []
+        for index, (state, priority) in enumerate(zip(states, priorities)):
+            requester = self.requester if index % 2 else self.other_requester
+            ticket = self._create_ticket(requester, f"담당자 집계 {state}")
+            values = {"state": state, "priority": priority}
+            if state not in {"received", "closed"}:
+                values["assigned_user_id"] = self.agent.id
+            ticket.sudo()._write_workflow(values)
+            tickets.append(ticket)
+
+        archived = self._create_ticket(
+            self.other_requester,
+            "담당자 집계 보관 제외",
+        )
+        archived.with_user(self.agent).write({"active": False})
+        own_ticket = self._create_ticket(self.agent, "담당자 본인 문의 접근")
+
+        data = self.env["it.helpdesk.ticket"].with_user(
+            self.agent
+        ).get_dashboard_data()
+
+        self.assertEqual(data["role"], "agent")
+        self.assertEqual(
+            {
+                key: value - initial_kpis[key]
+                for key, value in self._kpi_map(data).items()
+            },
+            {"total": 8, "unassigned": 2, "processing": 4, "urgent": 1},
+        )
+        state_counts = self._distribution_map(data, "state_distribution")
+        self.assertEqual(
+            {
+                key: value - initial_states[key]
+                for key, value in state_counts.items()
+            },
+            {
+                "received": 2,
+                "assigned": 1,
+                "in_progress": 1,
+                "reopen_requested": 1,
+                "reopened_in_progress": 1,
+                "resolved": 1,
+                "closed": 1,
+            },
+        )
+        self.assertEqual(
+            {
+                key: value - initial_priorities[key]
+                for key, value in self._distribution_map(
+                    data,
+                    "priority_distribution",
+                ).items()
+            },
+            {"low": 2, "normal": 3, "high": 2, "urgent": 1},
+        )
+        self.assertEqual(len(data["recent_tickets"]), 5)
+        self.assertEqual(
+            [ticket["id"] for ticket in data["urgent_tickets"]],
+            [tickets[0].id],
+        )
+        self.assertNotIn(archived.name, str(data))
+
+        my_tickets = self.env["it.helpdesk.ticket"].with_user(self.agent).search(
+            [("requester_id", "=", self.agent.id)]
+        )
+        self.assertIn(own_ticket, my_tickets)
+
+    def test_dashboard_zero_state_and_action_security(self):
+        empty_employee = new_test_user(
+            self.env,
+            login="helpdesk_day5_empty_dashboard",
+            groups="it_helpdesk.group_it_helpdesk_user",
+        )
+        data = self.env["it.helpdesk.ticket"].with_user(
+            empty_employee
+        ).get_dashboard_data()
+        self.assertEqual(self._kpi_map(data)["total"], 0)
+        self.assertFalse(data["recent_tickets"])
+        self.assertFalse(any(
+            item["count"] for item in data["state_distribution"]
+        ))
+
+        dashboard_action = self.env.ref(
+            "it_helpdesk.action_it_helpdesk_dashboard"
+        )
+        dashboard_menu = self.env.ref("it_helpdesk.menu_it_helpdesk_dashboard")
+        employee_group = self.env.ref("it_helpdesk.group_it_helpdesk_user")
+        self.assertEqual(dashboard_action.tag, "it_helpdesk.dashboard")
+        self.assertIn(employee_group, dashboard_menu.group_ids)
+        self.assertTrue(self.agent.has_group("it_helpdesk.group_it_helpdesk_user"))
