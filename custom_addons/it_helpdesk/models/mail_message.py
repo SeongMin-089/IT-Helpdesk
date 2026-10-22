@@ -1,9 +1,43 @@
-from odoo import api, models
+from odoo import SUPERUSER_ID, api, models
 from odoo.exceptions import AccessError, UserError
 
 
 class HelpdeskMailMessage(models.Model):
     _inherit = "mail.message"
+
+    def _check_helpdesk_message_operation(self, operation):
+        if self.env.uid == SUPERUSER_ID:
+            return
+
+        is_agent = self.env.user.has_group(
+            "it_helpdesk.group_it_helpdesk_agent"
+        )
+        is_employee = self.env.user.has_group(
+            "it_helpdesk.group_it_helpdesk_user"
+        )
+        for message in self.filtered(
+            lambda item: item.model == "it.helpdesk.ticket" and item.res_id
+        ):
+            if not (is_agent or is_employee):
+                raise AccessError("문의 댓글을 관리할 권한이 없습니다.")
+            ticket = (
+                self.env["it.helpdesk.ticket"]
+                .sudo()
+                .with_context(active_test=False)
+                .browse(message.res_id)
+                .exists()
+            )
+            if not ticket:
+                raise AccessError("댓글이 연결된 문의를 찾을 수 없습니다.")
+            ticket.sudo(False).check_access("read")
+            if not ticket.active:
+                raise UserError("보관된 문의의 댓글은 수정하거나 삭제할 수 없습니다.")
+            if ticket.state == "closed":
+                raise UserError("종료된 문의의 댓글은 수정하거나 삭제할 수 없습니다.")
+            if message.message_type != "comment":
+                raise AccessError("시스템 메시지는 수정하거나 삭제할 수 없습니다.")
+            if not is_agent and message.author_id != self.env.user.partner_id:
+                raise AccessError("본인이 작성한 댓글만 수정하거나 삭제할 수 있습니다.")
 
     @api.model
     def _helpdesk_attachment_ids(self, commands):
@@ -73,3 +107,19 @@ class HelpdeskMailMessage(models.Model):
                 attachments._validate_helpdesk_records()
 
         return super().create(vals_list)
+
+    def write(self, vals):
+        if (
+            {"model", "res_id"}.intersection(vals)
+            and self.env.uid != SUPERUSER_ID
+            and self.filtered(
+                lambda item: item.model == "it.helpdesk.ticket" and item.res_id
+            )
+        ):
+            raise AccessError("문의 댓글의 연결 대상을 변경할 수 없습니다.")
+        self._check_helpdesk_message_operation("write")
+        return super().write(vals)
+
+    def unlink(self):
+        self._check_helpdesk_message_operation("unlink")
+        return super().unlink()

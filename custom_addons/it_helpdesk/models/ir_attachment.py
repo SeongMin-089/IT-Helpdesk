@@ -114,8 +114,10 @@ class HelpdeskAttachment(models.Model):
             ):
                 raise AccessError("문의 첨부파일 업로드 권한이 없습니다.")
             ticket.sudo(False).check_access("read")
+        if not ticket.active:
+            raise AccessError("보관된 문의의 첨부파일은 변경할 수 없습니다.")
         if ticket.state == "closed":
-            raise AccessError("종료된 문의에는 첨부파일을 추가할 수 없습니다.")
+            raise AccessError("종료된 문의의 첨부파일은 변경할 수 없습니다.")
 
     @api.model
     def _helpdesk_lock_and_check_count(self, ticket, incoming_count, exclude_ids=None):
@@ -168,14 +170,30 @@ class HelpdeskAttachment(models.Model):
 
     def write(self, vals):
         vals = dict(vals)
+        source_by_ticket = defaultdict(lambda: self.env["ir.attachment"])
         final_by_ticket = defaultdict(lambda: self.env["ir.attachment"])
         touches_content = bool({"raw", "datas", "name", "mimetype"}.intersection(vals))
 
         for attachment in self:
+            if (
+                attachment.res_model == self._HELPDESK_MODEL
+                and attachment.res_id
+            ):
+                source_by_ticket[attachment.res_id] |= attachment
             final_model = vals.get("res_model", attachment.res_model)
             final_res_id = vals.get("res_id", attachment.res_id)
             if final_model == self._HELPDESK_MODEL and final_res_id:
                 final_by_ticket[final_res_id] |= attachment
+
+        for ticket_id in source_by_ticket:
+            source_ticket = (
+                self.env["it.helpdesk.ticket"]
+                .sudo()
+                .with_context(active_test=False)
+                .browse(ticket_id)
+                .exists()
+            )
+            self._helpdesk_check_ticket_access(source_ticket)
 
         for ticket_id, attachments in final_by_ticket.items():
             ticket = (
@@ -206,3 +224,21 @@ class HelpdeskAttachment(models.Model):
                         self._helpdesk_raw_from_values(vals, attachment),
                     )
         return super().write(vals)
+
+    def unlink(self):
+        ticket_ids = {
+            attachment.res_id
+            for attachment in self
+            if attachment.res_model == self._HELPDESK_MODEL
+            and attachment.res_id
+        }
+        for ticket_id in ticket_ids:
+            ticket = (
+                self.env["it.helpdesk.ticket"]
+                .sudo()
+                .with_context(active_test=False)
+                .browse(ticket_id)
+                .exists()
+            )
+            self._helpdesk_check_ticket_access(ticket)
+        return super().unlink()

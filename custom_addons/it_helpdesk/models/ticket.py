@@ -11,6 +11,12 @@ class HelpdeskTicket(models.Model):
     _order = "create_date desc"
     # Chatter 댓글은 Ticket 조회 권한을 기준으로 작성 가능
     _mail_post_access = "read"
+
+    _reference_unique = models.Constraint(
+        "UNIQUE (reference)",
+        "문의 번호는 중복될 수 없습니다.",
+    )
+
     # 문의 기본 정보
     reference = fields.Char(
         string="문의 번호",
