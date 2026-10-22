@@ -9,6 +9,8 @@ class HelpdeskTicket(models.Model):
     _inherit = ["mail.thread", "mail.activity.mixin"]
     _rec_name = "name"
     _order = "create_date desc"
+    # Chatter 댓글은 Ticket 조회 권한을 기준으로 작성 가능
+    _mail_post_access = "read"
     # 문의 기본 정보
     reference = fields.Char(
         string="문의 번호",
@@ -117,6 +119,16 @@ class HelpdeskTicket(models.Model):
         string="변경 이력",
         readonly=True,
     )
+
+    # Chatter 댓글 작성 권한 및 종료 상태 검증
+    def message_post(self, **kwargs):
+        self.ensure_one()
+        # Odoo 19 Chatter 컨트롤러는 sudo()로 메시지를 작성하므로
+        # 실제 로그인 사용자의 Ticket 조회 권한을 별도로 확인한다.
+        self.sudo(False).check_access("read")
+        if self.state == "closed":
+            raise UserError("종료된 문의에는 댓글을 작성할 수 없습니다.")
+        return super().message_post(**kwargs)
 
     # 입력값 검증 공통 함수
     def _validate_ticket_values(self, vals):
