@@ -26,6 +26,7 @@
     "assets": {
         "web.assets_backend": [
             "it_helpdesk/static/src/ui/helpdesk_ui.scss",
+            "it_helpdesk/static/src/ui/helpdesk_ui_phase2.scss",
             "it_helpdesk/static/src/sidebar/navbar_patch.js",
             "it_helpdesk/static/src/sidebar/navbar_patch.xml",
             "it_helpdesk/static/src/sidebar/sidebar.js",

@@ -1,0 +1,157 @@
+// Day 8 / Phase 2: all declarations are scoped to the IT Helpdesk app.
+// Do not change Odoo core navbar or view layouts in other applications.
+
+body.o_it_helpdesk_sidebar_active {
+  --it-surface: #ffffff;
+  --it-navy: #17233c;
+  --it-blue: #3276d2;
+  --it-border: #e1e7f0;
+  --it-text: #233249;
+  --it-muted: #64748b;
+
+  // Odoo's purple navbar: recolor it only while Helpdesk is active.
+  .o_navbar,
+  .o_navbar .o_main_navbar {
+    background: var(--it-navy) !important;
+    background-color: var(--it-navy) !important;
+    border-color: rgba(255, 255, 255, 0.09) !important;
+  }
+
+  .o_navbar .o_main_navbar {
+    .o_menu_brand,
+    .o_nav_entry,
+    .o_menu_sections button,
+    .o_menu_systray button,
+    .o_menu_systray a {
+      color: #e6edf9;
+    }
+  }
+
+  // Native Odoo forms (ticket, FAQ, category). Keep their layout semantics.
+  .o_action_manager .o_form_view {
+    background: #f3f6fb;
+
+    .o_form_sheet_bg {
+      background: #f3f6fb;
+    }
+
+    .o_form_sheet {
+      max-width: 1200px;
+      border: 1px solid var(--it-border);
+      border-radius: 1rem;
+      background: var(--it-surface);
+      box-shadow: 0 8px 28px rgba(23, 35, 60, 0.055);
+    }
+
+    .o_inner_group > tbody > tr > td.o_td_label .o_form_label,
+    .o_form_label {
+      color: #52627b;
+      font-weight: 650;
+    }
+
+    .o_group .o_group_col_6,
+    .o_group .o_group_col_12 {
+      min-width: 0;
+    }
+
+    .o_input,
+    .o_field_widget input:not([type="checkbox"]):not([type="radio"]),
+    .o_field_widget textarea,
+    .o_field_widget select {
+      border-radius: 0.6rem;
+      border-color: var(--it-border);
+
+      &:focus {
+        border-color: #92b6f1;
+        box-shadow: 0 0 0 3px rgba(50, 118, 210, 0.1);
+      }
+    }
+
+    textarea {
+      min-height: 110px;
+      padding: 0.7rem 0.8rem;
+      line-height: 1.6;
+    }
+
+    .o_form_statusbar,
+    .o_form_statusbar .o_statusbar_buttons {
+      background: #f8fafd;
+    }
+  }
+
+  // Native toolbar and form action buttons, excluding dashboard's own cards.
+  .o_action_manager .o_form_view,
+  .o_action_manager .o_control_panel {
+    .btn:not(.btn-link) {
+      border-radius: 0.6rem;
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      background-color: var(--it-blue);
+      border-color: var(--it-blue);
+      color: #fff;
+
+      &:hover {
+        background-color: #2565b8;
+        border-color: #2565b8;
+      }
+    }
+
+    .btn-secondary {
+      border-color: var(--it-border);
+      background-color: #fff;
+      color: var(--it-text);
+
+      &:hover {
+        background-color: #f0f5fc;
+      }
+    }
+  }
+
+  // FAQ long-answer widgets should retain comfortable reading space.
+  .o_it_helpdesk_faq_form .o_it_helpdesk_faq_answer {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  // Helpdesk-related wizard dialogs triggered inside Helpdesk.
+  .modal .modal-content {
+    border: 1px solid var(--it-border);
+    border-radius: 0.95rem;
+    box-shadow: 0 20px 60px rgba(23, 35, 60, 0.2);
+    overflow: hidden;
+  }
+
+  .modal .modal-header {
+    border-bottom-color: var(--it-border);
+    background: #f8fafd;
+
+    .modal-title {
+      color: var(--it-navy);
+      font-weight: 750;
+    }
+  }
+
+  .modal .modal-footer {
+    border-top-color: var(--it-border);
+    background: #fbfcfe;
+
+    .btn {
+      border-radius: 0.6rem;
+      font-weight: 650;
+    }
+
+    .btn-primary {
+      background: var(--it-blue);
+      border-color: var(--it-blue);
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .o_action_manager .o_form_view .o_form_sheet {
+      border-radius: 0.75rem;
+    }
+  }
+}

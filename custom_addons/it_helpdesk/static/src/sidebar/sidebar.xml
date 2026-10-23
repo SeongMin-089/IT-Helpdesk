@@ -25,23 +25,14 @@
                 }"
                 aria-label="IT Helpdesk 내비게이션"
             >
-                <div class="o_it_helpdesk_sidebar_brand">
-                    <span class="o_it_helpdesk_sidebar_logo" aria-hidden="true">
-                        <i class="fa fa-headphones" />
-                    </span>
-                    <span class="o_it_helpdesk_sidebar_brand_text">
-                        <strong>IT Helpdesk</strong>
-                        <small>Service Portal</small>
-                    </span>
-                    <button
-                        type="button"
-                        class="o_it_helpdesk_sidebar_mobile_close"
-                        aria-label="IT Helpdesk 메뉴 닫기"
-                        t-on-click="closeMobile"
-                    >
-                        <i class="fa fa-times" aria-hidden="true" />
-                    </button>
-                </div>
+                <button
+                    type="button"
+                    class="o_it_helpdesk_sidebar_mobile_close"
+                    aria-label="IT Helpdesk 메뉴 닫기"
+                    t-on-click="closeMobile"
+                >
+                    <i class="fa fa-times" aria-hidden="true" />
+                </button>
 
                 <nav class="o_it_helpdesk_sidebar_nav">
                     <t t-foreach="sections" t-as="menu" t-key="menu.id">
