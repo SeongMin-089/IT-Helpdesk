@@ -1,0 +1,80 @@
+// Day 8: center the breadcrumb title and preserve the native CogMenu.
+// Scoped to the active IT-Helpdesk app; other Odoo apps are unaffected.
+body.o_it_helpdesk_sidebar_active {
+  .o_action_manager .o_control_panel {
+    position: relative;
+
+    // Odoo 19 defaults to align-items-lg-start, which makes titles look high.
+    .o_control_panel_main {
+      align-items: center !important;
+    }
+
+    .o_control_panel_breadcrumbs {
+      align-items: center !important;
+      align-self: center;
+      min-height: 42px;
+      min-width: 0;
+      gap: 0.6rem !important;
+
+      .o_breadcrumb,
+      .o_last_breadcrumb_item {
+        align-items: center;
+        margin-block: 0;
+        line-height: 1.35;
+      }
+    }
+
+    // Search and navigation/pager stay centered alongside the title.
+    .o_control_panel_actions,
+    .o_control_panel_navigation {
+      align-self: center;
+    }
+
+    // Reserve a fixed right slot for the existing native Actions (cog) menu.
+    // The original dropdown is preserved, including import/export actions.
+    @media (min-width: 992px) {
+      .o_control_panel_navigation {
+        padding-right: 40px;
+      }
+
+      .o_cp_action_menus {
+        position: absolute;
+        right: 17px;
+        top: 50%;
+        z-index: 5;
+        transform: translateY(-50%);
+        padding: 0 !important;
+
+        > .lh-1 > .o-dropdown > button,
+        > .lh-1 > button,
+        button[aria-label="Actions menu"] {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          padding: 0 !important;
+          border: 1px solid #e1e7f0 !important;
+          border-radius: 9px;
+          background: #fff;
+          color: #64748b;
+
+          &:hover,
+          &:focus-visible {
+            background: #eff6ff;
+            color: #3276d2;
+            border-color: #b5cbed !important;
+          }
+        }
+      }
+    }
+
+    // On narrow screens, revert to Odoo's own adaptive layout.
+    @media (max-width: 991.98px) {
+      .o_cp_action_menus {
+        position: static;
+        transform: none;
+      }
+    }
+  }
+}

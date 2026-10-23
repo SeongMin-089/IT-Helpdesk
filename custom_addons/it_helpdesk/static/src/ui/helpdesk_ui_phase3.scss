@@ -1,0 +1,120 @@
+// Day 8 / Phase 3 — List and form pages use the same breathing room as dashboards.
+// Keep styles inside the Helpdesk app; no change to other Odoo applications.
+body.o_it_helpdesk_sidebar_active {
+  --it-page-gutter: clamp(16px, 2.5vw, 32px);
+
+  // Odoo's native view toolbar belongs to the individual view.
+  .o_action_manager .o_list_view,
+  .o_action_manager .o_form_view {
+    min-width: 0;
+
+    .o_control_panel {
+      margin: 16px var(--it-page-gutter) 14px;
+      padding: 16px 20px !important;
+      border: 1px solid #e1e7f0;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 4px 18px rgba(23, 35, 60, 0.045);
+
+      .o_control_panel_main {
+        align-items: center;
+        gap: 12px;
+      }
+
+      .o_control_panel_breadcrumbs {
+        min-width: 0;
+        gap: 12px !important;
+      }
+
+      // Keep the native creation behavior, but display the title first.
+      .o_control_panel_main_buttons {
+        order: 2;
+        flex: 0 0 auto;
+        margin-left: 4px;
+      }
+
+      .o_breadcrumb {
+        order: 1;
+        min-width: 0;
+      }
+
+      .o_control_panel_breadcrumbs > .me-auto {
+        order: 3;
+      }
+
+      .o_last_breadcrumb_item,
+      .o_breadcrumb .active {
+        color: #17233c;
+        font-size: clamp(1.05rem, 1.4vw, 1.3rem);
+        font-weight: 750;
+        letter-spacing: -0.025em;
+        line-height: 1.35;
+      }
+
+      .o_list_button_add,
+      .o_form_button_create {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 38px;
+        padding: 0.52rem 0.95rem;
+        border-radius: 9px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        white-space: nowrap;
+        box-shadow: 0 3px 9px rgba(50, 118, 210, 0.14);
+      }
+    }
+  }
+
+  // Give the main list/table room on all sides without squeezing the sidebar.
+  .o_action_manager .o_list_view {
+    .o_content {
+      min-width: 0;
+      min-height: 0;
+      padding: 0 var(--it-page-gutter) var(--it-page-gutter);
+      background: #f3f6fb;
+    }
+
+    .o_list_renderer {
+      min-width: 0;
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(23, 35, 60, 0.045);
+    }
+  }
+
+  // A form's sheet already has a card; only inset its scroll region.
+  .o_action_manager .o_form_view {
+    .o_content {
+      min-width: 0;
+      min-height: 0;
+      background: #f3f6fb;
+    }
+
+    .o_form_sheet_bg {
+      padding-right: var(--it-page-gutter);
+      padding-left: var(--it-page-gutter);
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    --it-page-gutter: 12px;
+
+    .o_action_manager .o_list_view,
+    .o_action_manager .o_form_view {
+      .o_control_panel {
+        margin-top: 10px;
+        padding: 12px !important;
+
+        .o_control_panel_main {
+          align-items: flex-start;
+        }
+
+        .o_last_breadcrumb_item,
+        .o_breadcrumb .active {
+          font-size: 1.05rem;
+        }
+      }
+    }
+  }
+}
