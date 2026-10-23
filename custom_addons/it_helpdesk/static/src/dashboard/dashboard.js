@@ -96,6 +96,49 @@ export class HelpdeskDashboard extends Component {
         );
     }
 
+    async openPublicFaq(faqId) {
+        const action = await this.orm.call(
+            "it.helpdesk.faq",
+            "open_public_faq",
+            [faqId]
+        );
+        return this.actionService.doAction(action);
+    }
+
+    openPublicFaqList() {
+        return this.actionService.doAction(
+            "it_helpdesk.action_it_helpdesk_faq_public"
+        );
+    }
+
+    openFaqManagement() {
+        return this.actionService.doAction(
+            "it_helpdesk.action_it_helpdesk_faq_management"
+        );
+    }
+
+    async openFaqKpi(kpi) {
+        const loadedAction = await this.actionService.loadAction(
+            "it_helpdesk.action_it_helpdesk_faq_management"
+        );
+        const action = { ...loadedAction };
+        action.domain = kpi.domain;
+        action.context = {
+            ...(loadedAction.context || {}),
+            ...kpi.context,
+        };
+        return this.actionService.doAction(action);
+    }
+
+    faqIcon(key) {
+        return {
+            total: "fa-files-o",
+            published: "fa-eye",
+            private: "fa-eye-slash",
+            archived: "fa-archive",
+        }[key] || "fa-question-circle";
+    }
+
     formatCreatedAt(value) {
         return value ? formatDateTime(deserializeDateTime(value)) : "";
     }

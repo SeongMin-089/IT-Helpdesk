@@ -117,6 +117,82 @@ class HelpdeskFaq(models.Model):
         self.write({"active": True})
         return True
 
+    @api.model
+    def get_dashboard_data(self):
+        """Return only the FAQ dashboard payload allowed for the current role."""
+        is_agent = self.env.user.has_group("it_helpdesk.group_it_helpdesk_agent")
+        is_employee = self.env.user.has_group("it_helpdesk.group_it_helpdesk_user")
+        if not is_agent and not is_employee:
+            raise AccessError("FAQ 대시보드 정보를 조회할 권한이 없습니다.")
+
+        if not is_agent:
+            recent_faqs = self.search(
+                [
+                    ("active", "=", True),
+                    ("is_published", "=", True),
+                ],
+                order="write_date desc, id desc",
+                limit=3,
+            )
+            return {
+                "recent_faqs": [
+                    {
+                        "id": faq.id,
+                        "name": faq.name,
+                        "category_name": faq.category_id.name or "전체",
+                    }
+                    for faq in recent_faqs
+                ]
+            }
+
+        all_faqs = self.with_context(active_test=False)
+        total_count = all_faqs.search_count([])
+        published_count = self.search_count(
+            [("active", "=", True), ("is_published", "=", True)]
+        )
+        private_count = self.search_count(
+            [("active", "=", True), ("is_published", "=", False)]
+        )
+        archived_count = all_faqs.search_count([("active", "=", False)])
+        return {
+            "faq_kpis": [
+                {
+                    "key": "total",
+                    "label": "전체 FAQ",
+                    "count": total_count,
+                    "domain": [],
+                    "context": {"active_test": False},
+                },
+                {
+                    "key": "published",
+                    "label": "공개 FAQ",
+                    "count": published_count,
+                    "domain": [
+                        ["active", "=", True],
+                        ["is_published", "=", True],
+                    ],
+                    "context": {"active_test": True},
+                },
+                {
+                    "key": "private",
+                    "label": "비공개 FAQ",
+                    "count": private_count,
+                    "domain": [
+                        ["active", "=", True],
+                        ["is_published", "=", False],
+                    ],
+                    "context": {"active_test": True},
+                },
+                {
+                    "key": "archived",
+                    "label": "보관 FAQ",
+                    "count": archived_count,
+                    "domain": [["active", "=", False]],
+                    "context": {"active_test": False},
+                },
+            ]
+        }
+
     @staticmethod
     def _normalize_search_text(value):
         value = (value or "").strip().lower()[:100]

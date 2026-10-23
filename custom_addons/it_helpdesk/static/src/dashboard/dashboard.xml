@@ -176,6 +176,72 @@
                     </section>
                 </div>
 
+                <section t-if="!isAgent" class="o_it_helpdesk_panel o_it_helpdesk_faq_section">
+                    <div class="o_it_helpdesk_panel_header">
+                        <div>
+                            <h2><i class="fa fa-question-circle" aria-hidden="true" /> 자주 묻는 질문</h2>
+                            <p>최근 수정된 해결 가이드를 확인해 보세요.</p>
+                        </div>
+                        <button type="button" class="btn btn-link" t-on-click="openPublicFaqList">
+                            전체 FAQ 보기
+                        </button>
+                    </div>
+                    <div t-if="state.data.recent_faqs.length" class="o_it_helpdesk_faq_list">
+                        <button
+                            t-foreach="state.data.recent_faqs"
+                            t-as="faq"
+                            t-key="faq.id"
+                            type="button"
+                            class="o_it_helpdesk_faq_row"
+                            t-on-click="() => this.openPublicFaq(faq.id)"
+                        >
+                            <i class="fa fa-file-text-o" aria-hidden="true" />
+                            <span class="o_it_helpdesk_faq_main">
+                                <strong t-esc="faq.name" />
+                                <small t-esc="faq.category_name" />
+                            </span>
+                            <span class="o_it_helpdesk_faq_link">
+                                상세 보기 <i class="fa fa-arrow-right" aria-hidden="true" />
+                            </span>
+                        </button>
+                    </div>
+                    <div t-else="" class="o_it_helpdesk_empty">
+                        <i class="fa fa-info-circle" aria-hidden="true" />
+                        <span>등록된 공개 FAQ가 없습니다.</span>
+                    </div>
+                </section>
+
+                <section t-if="isAgent" class="o_it_helpdesk_faq_management_section">
+                    <div class="o_it_helpdesk_faq_management_header">
+                        <div>
+                            <h2><i class="fa fa-book" aria-hidden="true" /> FAQ 관리 현황</h2>
+                            <p>공개 상태와 보관 여부를 포함한 FAQ 현황입니다.</p>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary" t-on-click="openFaqManagement">
+                            <i class="fa fa-cog" aria-hidden="true" /> FAQ 관리
+                        </button>
+                    </div>
+                    <div class="o_it_helpdesk_faq_kpi_grid" aria-label="FAQ 관리 핵심 지표">
+                        <button
+                            t-foreach="state.data.faq_kpis"
+                            t-as="kpi"
+                            t-key="kpi.key"
+                            type="button"
+                            t-att-class="'o_it_helpdesk_kpi_card o_it_helpdesk_faq_kpi o_it_helpdesk_faq_kpi_' + kpi.key"
+                            t-on-click="() => this.openFaqKpi(kpi)"
+                        >
+                            <span class="o_it_helpdesk_faq_kpi_heading">
+                                <i t-att-class="'fa ' + this.faqIcon(kpi.key)" aria-hidden="true" />
+                                <span class="o_it_helpdesk_kpi_label" t-esc="kpi.label" />
+                            </span>
+                            <strong class="o_it_helpdesk_kpi_value" t-esc="kpi.count" />
+                            <span class="o_it_helpdesk_kpi_link">
+                                FAQ 보기 <i class="fa fa-arrow-right" aria-hidden="true" />
+                            </span>
+                        </button>
+                    </div>
+                </section>
+
                 <footer class="o_it_helpdesk_shortcuts">
                     <button t-if="!isAgent" type="button" class="btn btn-primary" t-on-click="createTicket">
                         <i class="fa fa-plus" aria-hidden="true" /> 새 문의 등록

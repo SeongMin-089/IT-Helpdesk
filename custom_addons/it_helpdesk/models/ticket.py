@@ -190,6 +190,7 @@ class HelpdeskTicket(models.Model):
             order="create_date desc, id desc",
             limit=5,
         )
+        faq_dashboard_data = self.env["it.helpdesk.faq"].get_dashboard_data()
 
         if not is_agent:
             return {
@@ -246,6 +247,7 @@ class HelpdeskTicket(models.Model):
                 "priority_distribution": [],
                 "recent_tickets": serialize(recent_tickets),
                 "urgent_tickets": [],
+                **faq_dashboard_data,
             }
 
         unresolved_states = [
@@ -339,6 +341,7 @@ class HelpdeskTicket(models.Model):
             "priority_distribution": priority_distribution,
             "recent_tickets": serialize(recent_tickets),
             "urgent_tickets": serialize(urgent_tickets),
+            **faq_dashboard_data,
         }
 
     # Chatter 댓글 작성 권한 및 종료 상태 검증

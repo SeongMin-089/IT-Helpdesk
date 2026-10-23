@@ -315,6 +315,143 @@ class TestHelpdeskDay7(TransactionCase):
         )
         self.assertTrue(options["no_create"])
 
+    def test_employee_dashboard_returns_only_latest_public_faqs(self):
+        ticket = self._create_ticket("대시보드 KPI 유지")
+        before = (
+            self.env["it.helpdesk.ticket"]
+            .with_user(self.requester)
+            .get_dashboard_data()
+        )
+        public_faqs = [
+            self._create_faq(f"대시보드 공개 {index}", publish=True)
+            for index in range(4)
+        ]
+        private_faq = self._create_faq("대시보드 비공개 원본 문의")
+        private_faq.with_user(self.agent).write({"source_ticket_id": ticket.id})
+        archived_faq = self._create_faq("대시보드 보관", publish=True)
+        archived_faq.with_user(self.agent).action_archive()
+
+        data = (
+            self.env["it.helpdesk.ticket"]
+            .with_user(self.requester)
+            .get_dashboard_data()
+        )
+        expected = (
+            self.env["it.helpdesk.faq"]
+            .with_user(self.requester)
+            .search(
+                [("active", "=", True), ("is_published", "=", True)],
+                order="write_date desc, id desc",
+                limit=3,
+            )
+        )
+        self.assertEqual(
+            [item["id"] for item in data["recent_faqs"]],
+            expected.ids,
+        )
+        self.assertEqual(len(data["recent_faqs"]), 3)
+        self.assertTrue(
+            set(expected.ids).issubset({faq.id for faq in public_faqs})
+        )
+        self.assertNotIn(private_faq.id, expected.ids)
+        self.assertNotIn(archived_faq.id, expected.ids)
+        self.assertNotIn("faq_kpis", data)
+        self.assertNotIn(private_faq.name, str(data))
+        self.assertNotIn("source_ticket", str(data))
+        self.assertTrue(
+            all(
+                set(item) == {"id", "name", "category_name"}
+                for item in data["recent_faqs"]
+            )
+        )
+        self.assertEqual(before["kpis"], data["kpis"])
+        self.assertTrue(
+            any(item["id"] == ticket.id for item in data["recent_tickets"])
+        )
+
+    def test_employee_dashboard_handles_zero_faqs(self):
+        data = (
+            self.env["it.helpdesk.ticket"]
+            .with_user(self.requester)
+            .get_dashboard_data()
+        )
+        self.assertEqual(data["recent_faqs"], [])
+        self.assertNotIn("faq_kpis", data)
+        with self.assertRaises(AccessError):
+            self.env["it.helpdesk.faq"].with_user(
+                self.outsider
+            ).get_dashboard_data()
+
+    def test_agent_dashboard_faq_kpis_include_archived_records(self):
+        published = self._create_faq("대시보드 공개", publish=True)
+        private = self._create_faq("대시보드 비공개")
+        archived_public = self._create_faq("대시보드 공개 보관", publish=True)
+        archived_public.with_user(self.agent).action_archive()
+        archived_private = self._create_faq("대시보드 비공개 보관")
+        archived_private.with_user(self.agent).action_archive()
+
+        data = (
+            self.env["it.helpdesk.ticket"]
+            .with_user(self.agent)
+            .get_dashboard_data()
+        )
+        kpis = {item["key"]: item for item in data["faq_kpis"]}
+        faq_model = self.env["it.helpdesk.faq"].with_user(self.agent)
+        expected_total = faq_model.with_context(active_test=False).search_count([])
+        expected_published = faq_model.search_count(
+            [("active", "=", True), ("is_published", "=", True)]
+        )
+        expected_private = faq_model.search_count(
+            [("active", "=", True), ("is_published", "=", False)]
+        )
+        expected_archived = faq_model.with_context(active_test=False).search_count(
+            [("active", "=", False)]
+        )
+        self.assertEqual(kpis["total"]["count"], expected_total)
+        self.assertEqual(kpis["published"]["count"], expected_published)
+        self.assertEqual(kpis["private"]["count"], expected_private)
+        self.assertEqual(kpis["archived"]["count"], expected_archived)
+        self.assertEqual(
+            kpis["total"]["count"],
+            kpis["published"]["count"]
+            + kpis["private"]["count"]
+            + kpis["archived"]["count"],
+        )
+        self.assertFalse(kpis["total"]["context"]["active_test"])
+        self.assertFalse(kpis["archived"]["context"]["active_test"])
+        self.assertEqual(kpis["archived"]["domain"], [["active", "=", False]])
+        filtered_ids = {
+            key: set(
+                faq_model.with_context(**item["context"])
+                .search(item["domain"])
+                .ids
+            )
+            for key, item in kpis.items()
+        }
+        self.assertTrue(
+            {
+                published.id,
+                private.id,
+                archived_public.id,
+                archived_private.id,
+            }.issubset(filtered_ids["total"])
+        )
+        self.assertIn(published.id, filtered_ids["published"])
+        self.assertNotIn(private.id, filtered_ids["published"])
+        self.assertIn(private.id, filtered_ids["private"])
+        self.assertNotIn(published.id, filtered_ids["private"])
+        self.assertTrue(
+            {archived_public.id, archived_private.id}.issubset(
+                filtered_ids["archived"]
+            )
+        )
+        self.assertTrue(published.active and published.is_published)
+        self.assertTrue(private.active and not private.is_published)
+        self.assertFalse(archived_public.active)
+        self.assertFalse(archived_private.active)
+        self.assertNotIn("recent_faqs", data)
+        self.assertNotIn("source_ticket", str(data))
+
     def test_day6_auto_assignment_and_dashboard_regression(self):
         category = (
             self.env["it.helpdesk.category"]
