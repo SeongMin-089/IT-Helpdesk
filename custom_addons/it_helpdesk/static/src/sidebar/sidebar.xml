@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="it_helpdesk.Sidebar">
+        <t t-if="state.isHelpdeskApp">
+            <button
+                type="button"
+                class="o_it_helpdesk_sidebar_mobile_toggle"
+                aria-label="IT Helpdesk 메뉴 열기"
+                title="메뉴 열기"
+                t-on-click="toggleMobile"
+            >
+                <i class="fa fa-bars" aria-hidden="true" />
+            </button>
+
+            <div
+                t-if="state.isMobileOpen"
+                class="o_it_helpdesk_sidebar_backdrop"
+                t-on-click="closeMobile"
+            />
+
+            <aside
+                t-att-class="{
+                    'o_it_helpdesk_sidebar': true,
+                    'o_it_helpdesk_sidebar_collapsed': state.isCollapsed,
+                    'o_it_helpdesk_sidebar_mobile_open': state.isMobileOpen,
+                }"
+                aria-label="IT Helpdesk 내비게이션"
+            >
+                <div class="o_it_helpdesk_sidebar_brand">
+                    <span class="o_it_helpdesk_sidebar_logo" aria-hidden="true">
+                        <i class="fa fa-headphones" />
+                    </span>
+                    <span class="o_it_helpdesk_sidebar_brand_text">
+                        <strong>IT Helpdesk</strong>
+                        <small>Service Portal</small>
+                    </span>
+                    <button
+                        type="button"
+                        class="o_it_helpdesk_sidebar_mobile_close"
+                        aria-label="IT Helpdesk 메뉴 닫기"
+                        t-on-click="closeMobile"
+                    >
+                        <i class="fa fa-times" aria-hidden="true" />
+                    </button>
+                </div>
+
+                <nav class="o_it_helpdesk_sidebar_nav">
+                    <t t-foreach="sections" t-as="menu" t-key="menu.id">
+                        <div
+                            t-if="menu.childrenTree.length"
+                            t-att-class="{
+                                'o_it_helpdesk_sidebar_group': true,
+                                'o_active': this.isActive(menu),
+                                'o_expanded': this.isExpanded(menu),
+                            }"
+                        >
+                            <button
+                                type="button"
+                                class="o_it_helpdesk_sidebar_item o_it_helpdesk_sidebar_group_toggle"
+                                t-att-title="menu.name"
+                                t-att-aria-expanded="this.isExpanded(menu)"
+                                t-on-click="() => this.toggleGroup(menu)"
+                            >
+                                <i t-att-class="'fa ' + this.menuIcon(menu)" aria-hidden="true" />
+                                <span class="o_it_helpdesk_sidebar_label" t-esc="menu.name" />
+                                <i class="fa fa-angle-down o_it_helpdesk_sidebar_chevron" aria-hidden="true" />
+                            </button>
+                            <div
+                                t-if="this.isExpanded(menu) &amp;&amp; (!state.isCollapsed || ui.isSmall)"
+                                class="o_it_helpdesk_sidebar_submenu"
+                            >
+                                <a
+                                    t-foreach="menu.childrenTree"
+                                    t-as="child"
+                                    t-key="child.id"
+                                    t-att-href="this.getMenuHref(child)"
+                                    t-att-title="child.name"
+                                    t-att-class="{
+                                        'o_it_helpdesk_sidebar_item': true,
+                                        'o_it_helpdesk_sidebar_subitem': true,
+                                        'o_active': this.isActive(child),
+                                    }"
+                                    t-on-click.prevent="() => this.selectMenu(child)"
+                                >
+                                    <i t-att-class="'fa ' + this.menuIcon(child)" aria-hidden="true" />
+                                    <span class="o_it_helpdesk_sidebar_label" t-esc="child.name" />
+                                </a>
+                            </div>
+                        </div>
+
+                        <a
+                            t-else=""
+                            t-att-href="this.getMenuHref(menu)"
+                            t-att-title="menu.name"
+                            t-att-class="{
+                                'o_it_helpdesk_sidebar_item': true,
+                                'o_active': this.isActive(menu),
+                            }"
+                            t-on-click.prevent="() => this.selectMenu(menu)"
+                        >
+                            <i t-att-class="'fa ' + this.menuIcon(menu)" aria-hidden="true" />
+                            <span class="o_it_helpdesk_sidebar_label" t-esc="menu.name" />
+                        </a>
+                    </t>
+                </nav>
+
+                <div class="o_it_helpdesk_sidebar_footer">
+                    <button
+                        type="button"
+                        class="o_it_helpdesk_sidebar_item o_it_helpdesk_sidebar_collapse"
+                        t-att-title="state.isCollapsed ? '사이드바 펼치기' : '사이드바 접기'"
+                        t-on-click="toggleCollapsed"
+                    >
+                        <i
+                            t-att-class="state.isCollapsed ? 'fa fa-angle-double-right' : 'fa fa-angle-double-left'"
+                            aria-hidden="true"
+                        />
+                        <span class="o_it_helpdesk_sidebar_label">사이드바 접기</span>
+                    </button>
+                </div>
+            </aside>
+        </t>
+    </t>
+</templates>

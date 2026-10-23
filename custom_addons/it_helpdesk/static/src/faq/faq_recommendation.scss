@@ -64,3 +64,25 @@
     -webkit-line-clamp: 2;
   }
 }
+
+.o_it_helpdesk_faq_form {
+  .o_it_helpdesk_faq_answer {
+    min-width: 0;
+    max-width: 100%;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+
+    > div,
+    textarea {
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    textarea {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+  }
+}

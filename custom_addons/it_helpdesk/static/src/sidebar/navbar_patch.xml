@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="web.NavBar" t-inherit-mode="extension">
+        <xpath expr="//t[@t-if='currentAppSections.length']" position="attributes">
+            <attribute name="t-if">currentAppSections.length &amp;&amp; !isItHelpdeskApp</attribute>
+        </xpath>
+    </t>
+</templates>

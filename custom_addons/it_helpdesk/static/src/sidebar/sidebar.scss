@@ -1,0 +1,294 @@
+$it-helpdesk-sidebar-width: 264px;
+$it-helpdesk-sidebar-collapsed-width: 76px;
+
+body.o_it_helpdesk_sidebar_active {
+  .o_web_client > .o_action_manager {
+    min-width: 0;
+    margin-left: $it-helpdesk-sidebar-width;
+    transition: margin-left 160ms ease;
+  }
+
+  &.o_it_helpdesk_sidebar_collapsed {
+    .o_web_client > .o_action_manager {
+      margin-left: $it-helpdesk-sidebar-collapsed-width;
+    }
+  }
+}
+
+.o_it_helpdesk_sidebar {
+  position: fixed;
+  z-index: 100;
+  top: var(--o-navbar-height, 46px);
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  width: $it-helpdesk-sidebar-width;
+  min-width: 0;
+  overflow: hidden;
+  color: #d8e2f0;
+  background: #17233c;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 8px 0 24px rgba(15, 23, 42, 0.12);
+  transition:
+    width 160ms ease,
+    transform 180ms ease;
+
+  &.o_it_helpdesk_sidebar_collapsed {
+    width: $it-helpdesk-sidebar-collapsed-width;
+
+    .o_it_helpdesk_sidebar_brand,
+    .o_it_helpdesk_sidebar_item {
+      justify-content: center;
+    }
+
+    .o_it_helpdesk_sidebar_brand_text,
+    .o_it_helpdesk_sidebar_label,
+    .o_it_helpdesk_sidebar_chevron {
+      display: none;
+    }
+
+    .o_it_helpdesk_sidebar_item {
+      padding-right: 0.75rem;
+      padding-left: 0.75rem;
+    }
+  }
+}
+
+.o_it_helpdesk_sidebar_brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 78px;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.o_it_helpdesk_sidebar_logo {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 0.8rem;
+  color: #fff;
+  background: #3276d2;
+  box-shadow: 0 8px 18px rgba(50, 118, 210, 0.28);
+  font-size: 1.15rem;
+}
+
+.o_it_helpdesk_sidebar_brand_text {
+  display: grid;
+  min-width: 0;
+
+  strong {
+    color: #fff;
+    font-size: 1rem;
+    letter-spacing: -0.015em;
+  }
+
+  small {
+    color: #8fa2bd;
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+}
+
+.o_it_helpdesk_sidebar_nav {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0.8rem 0.65rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #53647d transparent;
+}
+
+.o_it_helpdesk_sidebar_group {
+  margin-bottom: 0.2rem;
+}
+
+.o_it_helpdesk_sidebar_item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 42px;
+  margin: 0.12rem 0;
+  padding: 0.62rem 0.8rem;
+  border: 0;
+  border-radius: 0.65rem;
+  color: #b8c5d8;
+  text-align: left;
+  text-decoration: none;
+  background: transparent;
+  transition:
+    color 120ms ease,
+    background 120ms ease;
+
+  > .fa:first-child {
+    flex: 0 0 22px;
+    width: 22px;
+    color: #91a4c0;
+    font-size: 0.95rem;
+    text-align: center;
+  }
+
+  &:hover,
+  &:focus-visible {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+    outline: none;
+
+    > .fa:first-child {
+      color: #79b2ff;
+    }
+  }
+
+  &.o_active,
+  .o_it_helpdesk_sidebar_group.o_active > & {
+    color: #fff;
+    background: rgba(50, 118, 210, 0.28);
+
+    > .fa:first-child {
+      color: #8dc1ff;
+    }
+  }
+}
+
+.o_it_helpdesk_sidebar_label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.o_it_helpdesk_sidebar_chevron {
+  margin-left: auto;
+  transition: transform 140ms ease;
+}
+
+.o_it_helpdesk_sidebar_group.o_expanded {
+  .o_it_helpdesk_sidebar_chevron {
+    transform: rotate(180deg);
+  }
+}
+
+.o_it_helpdesk_sidebar_submenu {
+  display: grid;
+  margin: 0.15rem 0 0.45rem;
+  padding-left: 0.75rem;
+}
+
+.o_it_helpdesk_sidebar_subitem {
+  min-height: 38px;
+  padding-top: 0.48rem;
+  padding-bottom: 0.48rem;
+  font-size: 0.86rem;
+}
+
+.o_it_helpdesk_sidebar_footer {
+  flex: 0 0 auto;
+  padding: 0.65rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.o_it_helpdesk_sidebar_collapse {
+  margin: 0;
+}
+
+.o_it_helpdesk_sidebar_mobile_toggle,
+.o_it_helpdesk_sidebar_mobile_close,
+.o_it_helpdesk_sidebar_backdrop {
+  display: none;
+}
+
+@media (max-width: 767.98px) {
+  body.o_it_helpdesk_sidebar_active,
+  body.o_it_helpdesk_sidebar_active.o_it_helpdesk_sidebar_collapsed {
+    .o_web_client > .o_action_manager {
+      margin-left: 0;
+    }
+  }
+
+  .o_it_helpdesk_sidebar {
+    z-index: 1040;
+    width: 86vw;
+    max-width: 320px;
+    transform: translateX(-105%);
+
+    &.o_it_helpdesk_sidebar_collapsed {
+      width: 86vw;
+      max-width: 320px;
+
+      .o_it_helpdesk_sidebar_brand,
+      .o_it_helpdesk_sidebar_item {
+        justify-content: flex-start;
+      }
+
+      .o_it_helpdesk_sidebar_brand_text,
+      .o_it_helpdesk_sidebar_label {
+        display: block;
+      }
+
+      .o_it_helpdesk_sidebar_brand_text {
+        display: grid;
+      }
+
+      .o_it_helpdesk_sidebar_chevron {
+        display: inline-block;
+      }
+    }
+
+    &.o_it_helpdesk_sidebar_mobile_open {
+      transform: translateX(0);
+    }
+  }
+
+  .o_it_helpdesk_sidebar_mobile_toggle {
+    position: fixed;
+    z-index: 1020;
+    top: calc(var(--o-navbar-height, 46px) + 0.65rem);
+    left: 0.65rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: 1px solid #d9e2ef;
+    border-radius: 0.7rem;
+    color: #17233c;
+    background: #fff;
+    box-shadow: 0 8px 20px rgba(23, 35, 60, 0.14);
+  }
+
+  .o_it_helpdesk_sidebar_mobile_close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    margin-left: auto;
+    border: 0;
+    border-radius: 0.6rem;
+    color: #d8e2f0;
+    background: transparent;
+  }
+
+  .o_it_helpdesk_sidebar_backdrop {
+    position: fixed;
+    z-index: 1030;
+    top: var(--o-navbar-height, 46px);
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: block;
+    background: rgba(15, 23, 42, 0.48);
+  }
+
+  .o_it_helpdesk_sidebar_collapse {
+    display: none;
+  }
+}

@@ -20,7 +20,13 @@
         <field name="model">it.helpdesk.faq</field>
         <field name="priority" eval="10" />
         <field name="arch" type="xml">
-            <form string="FAQ / 해결 가이드" create="false" edit="false" delete="false">
+            <form
+                string="FAQ / 해결 가이드"
+                create="false"
+                edit="false"
+                delete="false"
+                class="o_it_helpdesk_faq_form"
+            >
                 <sheet>
                     <group>
                         <field name="name" readonly="1" />
@@ -29,7 +35,13 @@
                         <field name="write_date" readonly="1" />
                     </group>
                     <group string="해결 방법">
-                        <field name="answer" nolabel="1" readonly="1" />
+                        <field
+                            name="answer"
+                            nolabel="1"
+                            colspan="2"
+                            readonly="1"
+                            class="o_it_helpdesk_faq_answer"
+                        />
                     </group>
                 </sheet>
             </form>
@@ -98,7 +110,11 @@
         <field name="model">it.helpdesk.faq</field>
         <field name="priority" eval="20" />
         <field name="arch" type="xml">
-            <form string="FAQ 관리" delete="false">
+            <form
+                string="FAQ 관리"
+                delete="false"
+                class="o_it_helpdesk_faq_form"
+            >
                 <header>
                     <button
                         name="action_publish"
@@ -154,7 +170,12 @@
                         </group>
                     </group>
                     <group string="해결 방법">
-                        <field name="answer" nolabel="1" />
+                        <field
+                            name="answer"
+                            nolabel="1"
+                            colspan="2"
+                            class="o_it_helpdesk_faq_answer"
+                        />
                     </group>
                 </sheet>
             </form>
