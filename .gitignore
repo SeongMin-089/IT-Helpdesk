@@ -15,3 +15,10 @@ odoo.conf
 # IDE and temporary files
 .vscode/
 *.log
+
+# Local patch files
+*.patch
+*.diff
+
+# Local UI modification scripts
+apply_it_helpdesk_*.py

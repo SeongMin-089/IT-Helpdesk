@@ -1,13 +1,10 @@
 /** @odoo-module **/
 
-import { browser } from "@web/core/browser/browser";
-import { registry } from "@web/core/registry";
 import { useBus, useService } from "@web/core/utils/hooks";
 import { Component, onMounted, onWillUnmount, useState } from "@odoo/owl";
 
 
 const HELPDESK_APP_XMLID = "it_helpdesk.menu_it_helpdesk_root";
-const COLLAPSED_STORAGE_KEY = "it_helpdesk.sidebar.collapsed";
 
 export class HelpdeskSidebar extends Component {
     static template = "it_helpdesk.Sidebar";
@@ -16,11 +13,8 @@ export class HelpdeskSidebar extends Component {
     setup() {
         this.menuService = useService("menu");
         this.actionService = useService("action");
-        this.ui = useState(useService("ui"));
         this.state = useState({
             isHelpdeskApp: false,
-            isCollapsed:
-                browser.localStorage.getItem(COLLAPSED_STORAGE_KEY) === "1",
             isMobileOpen: false,
             activeMenuId: false,
             expanded: {
@@ -108,21 +102,7 @@ export class HelpdeskSidebar extends Component {
     }
 
     toggleGroup(menu) {
-        if (this.state.isCollapsed && !this.ui.isSmall) {
-            this.state.isCollapsed = false;
-            browser.localStorage.setItem(COLLAPSED_STORAGE_KEY, "0");
-            this.syncBodyClasses();
-        }
         this.state.expanded[menu.xmlid] = !this.isExpanded(menu);
-    }
-
-    toggleCollapsed() {
-        this.state.isCollapsed = !this.state.isCollapsed;
-        browser.localStorage.setItem(
-            COLLAPSED_STORAGE_KEY,
-            this.state.isCollapsed ? "1" : "0"
-        );
-        this.syncBodyClasses();
     }
 
     toggleMobile() {
@@ -165,20 +145,10 @@ export class HelpdeskSidebar extends Component {
             "o_it_helpdesk_sidebar_active",
             this.state.isHelpdeskApp
         );
-        document.body.classList.toggle(
-            "o_it_helpdesk_sidebar_collapsed",
-            this.state.isHelpdeskApp && this.state.isCollapsed
-        );
     }
 
     clearBodyClasses() {
-        document.body.classList.remove(
-            "o_it_helpdesk_sidebar_active",
-            "o_it_helpdesk_sidebar_collapsed"
-        );
+        document.body.classList.remove("o_it_helpdesk_sidebar_active");
     }
 }
 
-registry.category("main_components").add("it_helpdesk.Sidebar", {
-    Component: HelpdeskSidebar,
-});

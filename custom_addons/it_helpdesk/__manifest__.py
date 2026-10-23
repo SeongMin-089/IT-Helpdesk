@@ -25,10 +25,13 @@
     "application": True,
     "assets": {
         "web.assets_backend": [
+            "it_helpdesk/static/src/ui/helpdesk_ui.scss",
             "it_helpdesk/static/src/sidebar/navbar_patch.js",
             "it_helpdesk/static/src/sidebar/navbar_patch.xml",
             "it_helpdesk/static/src/sidebar/sidebar.js",
             "it_helpdesk/static/src/sidebar/sidebar.xml",
+            "it_helpdesk/static/src/sidebar/webclient_patch.js",
+            "it_helpdesk/static/src/sidebar/webclient_patch.xml",
             "it_helpdesk/static/src/sidebar/sidebar.scss",
             "it_helpdesk/static/src/dashboard/dashboard.js",
             "it_helpdesk/static/src/dashboard/dashboard.xml",

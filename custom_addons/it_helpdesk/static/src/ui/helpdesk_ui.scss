@@ -1,0 +1,112 @@
+// IT Helpdesk-only control panel and ticket list styling.
+// The body class is attached only while the IT Helpdesk app is active.
+// No global Odoo navbar, action manager, or mail styling is changed.
+body.o_it_helpdesk_sidebar_active {
+  --it-ui-primary: #2563eb;
+  --it-ui-ink: #17233c;
+  --it-ui-border: #e1e7f0;
+  --it-ui-muted: #64748b;
+
+  .o_action_manager {
+    background: #f3f6fb;
+  }
+
+  // Shared action toolbar: New, search and list controls.
+  .o_control_panel {
+    background: #f3f6fb;
+    border-bottom-color: var(--it-ui-border);
+
+    .o_control_panel_main,
+    .o_control_panel_actions {
+      gap: 0.65rem;
+    }
+
+    .o_cp_buttons .btn,
+    .o_cp_action_menus .btn,
+    .o_cp_pager .btn,
+    .o_searchview,
+    .o_searchview_input_container {
+      border-radius: 0.65rem;
+    }
+
+    .o_cp_buttons .btn-primary,
+    .o_cp_buttons .o_list_button_add {
+      border: 1px solid var(--it-ui-primary);
+      background: var(--it-ui-primary);
+      color: #fff;
+      font-weight: 650;
+
+      &:hover {
+        background: #1d4ed8;
+        border-color: #1d4ed8;
+      }
+    }
+
+    .o_searchview {
+      background: #fff;
+      border: 1px solid var(--it-ui-border);
+      box-shadow: 0 2px 8px rgba(23, 35, 60, 0.035);
+
+      &:focus-within {
+        border-color: #93b4f4;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+    }
+  }
+
+  // Helpdesk ticket list: scope by model, not other Odoo list screens.
+  .o_action_manager .o_list_view {
+    .o_list_renderer {
+      background: #fff;
+      border: 1px solid var(--it-ui-border);
+      border-radius: 0.85rem;
+      overflow: auto;
+    }
+
+    .o_list_table {
+      border-collapse: separate;
+      border-spacing: 0;
+      color: var(--it-ui-ink);
+
+      thead th {
+        padding-top: 0.9rem;
+        padding-bottom: 0.9rem;
+        border-bottom: 1px solid var(--it-ui-border);
+        background: #f8fafd;
+        color: #475569;
+        font-size: 0.78rem;
+        font-weight: 700;
+      }
+
+      tbody tr:not(.o_group_header) {
+        > td {
+          padding-top: 0.8rem;
+          padding-bottom: 0.8rem;
+          border-bottom: 1px solid #eff2f7;
+          color: var(--it-ui-ink);
+          vertical-align: middle;
+        }
+
+        &:hover > td {
+          background: #f5f9ff;
+        }
+      }
+
+      .badge {
+        border-radius: 999px;
+        padding: 0.3rem 0.62rem;
+        font-size: 0.76rem;
+        font-weight: 650;
+      }
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .o_control_panel {
+      .o_searchview {
+        min-width: 0;
+        width: 100%;
+      }
+    }
+  }
+}

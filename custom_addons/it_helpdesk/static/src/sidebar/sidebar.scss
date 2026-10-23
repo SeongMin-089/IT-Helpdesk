@@ -1,67 +1,51 @@
 $it-helpdesk-sidebar-width: 264px;
-$it-helpdesk-sidebar-collapsed-width: 76px;
 
-body.o_it_helpdesk_sidebar_active {
-  --it-helpdesk-sidebar-current-width: #{$it-helpdesk-sidebar-width};
-
-  .o_web_client > .o_action_manager {
-    align-self: flex-start;
-    box-sizing: border-box;
+// 다른 Odoo 앱에서 기존 ActionContainer 크기 복원
+body:not(.o_it_helpdesk_sidebar_active) {
+  .o_it_helpdesk_workspace > .o_action_manager {
     flex: 1 1 auto;
     min-width: 0;
-    width: calc(100% - var(--it-helpdesk-sidebar-current-width));
-    max-width: calc(100% - var(--it-helpdesk-sidebar-current-width));
-    margin-left: var(--it-helpdesk-sidebar-current-width);
-    overflow-x: hidden;
-    transition:
-      width 160ms ease,
-      max-width 160ms ease,
-      margin-left 160ms ease;
+    min-height: 0;
+    width: 100%;
+  }
+}
+
+// Only the IT-Helpdesk app gets a true two-column flex workspace.
+body.o_it_helpdesk_sidebar_active {
+  .o_it_helpdesk_workspace {
+    display: flex;
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
   }
 
-  &.o_it_helpdesk_sidebar_collapsed {
-    --it-helpdesk-sidebar-current-width: #{$it-helpdesk-sidebar-collapsed-width};
+  .o_it_helpdesk_workspace > .o_action_manager {
+    flex: 1 1 0%;
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    overflow-x: auto;
   }
 }
 
 .o_it_helpdesk_sidebar {
-  position: fixed;
+  position: relative;
   z-index: 100;
-  top: var(--o-navbar-height, 46px);
-  bottom: 0;
-  left: 0;
   display: flex;
+  flex: 0 0 $it-helpdesk-sidebar-width;
   flex-direction: column;
   width: $it-helpdesk-sidebar-width;
-  min-width: 0;
+  min-width: $it-helpdesk-sidebar-width;
+  min-height: 0;
   overflow: hidden;
   color: #d8e2f0;
   background: #17233c;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 8px 0 24px rgba(15, 23, 42, 0.12);
-  transition:
-    width 160ms ease,
-    transform 180ms ease;
-
-  &.o_it_helpdesk_sidebar_collapsed {
-    width: $it-helpdesk-sidebar-collapsed-width;
-
-    .o_it_helpdesk_sidebar_brand,
-    .o_it_helpdesk_sidebar_item {
-      justify-content: center;
-    }
-
-    .o_it_helpdesk_sidebar_brand_text,
-    .o_it_helpdesk_sidebar_label,
-    .o_it_helpdesk_sidebar_chevron {
-      display: none;
-    }
-
-    .o_it_helpdesk_sidebar_item {
-      padding-right: 0.75rem;
-      padding-left: 0.75rem;
-    }
-  }
 }
 
 .o_it_helpdesk_sidebar_brand {
@@ -198,16 +182,6 @@ body.o_it_helpdesk_sidebar_active {
   font-size: 0.86rem;
 }
 
-.o_it_helpdesk_sidebar_footer {
-  flex: 0 0 auto;
-  padding: 0.65rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.o_it_helpdesk_sidebar_collapse {
-  margin: 0;
-}
-
 .o_it_helpdesk_sidebar_mobile_toggle,
 .o_it_helpdesk_sidebar_mobile_close,
 .o_it_helpdesk_sidebar_backdrop {
@@ -215,46 +189,24 @@ body.o_it_helpdesk_sidebar_active {
 }
 
 @media (max-width: 767.98px) {
-  body.o_it_helpdesk_sidebar_active,
-  body.o_it_helpdesk_sidebar_active.o_it_helpdesk_sidebar_collapsed {
-    --it-helpdesk-sidebar-current-width: 0px;
-
-    .o_web_client > .o_action_manager {
-      align-self: stretch;
+  body.o_it_helpdesk_sidebar_active {
+    .o_it_helpdesk_workspace > .o_action_manager {
+      flex: 1 1 auto;
       width: 100%;
-      max-width: 100%;
-      margin-left: 0;
+      min-width: 0;
     }
   }
 
   .o_it_helpdesk_sidebar {
+    position: fixed;
     z-index: 1040;
+    top: var(--o-navbar-height, 46px);
+    bottom: 0;
+    left: 0;
     width: 86vw;
+    min-width: 0;
     max-width: 320px;
     transform: translateX(-105%);
-
-    &.o_it_helpdesk_sidebar_collapsed {
-      width: 86vw;
-      max-width: 320px;
-
-      .o_it_helpdesk_sidebar_brand,
-      .o_it_helpdesk_sidebar_item {
-        justify-content: flex-start;
-      }
-
-      .o_it_helpdesk_sidebar_brand_text,
-      .o_it_helpdesk_sidebar_label {
-        display: block;
-      }
-
-      .o_it_helpdesk_sidebar_brand_text {
-        display: grid;
-      }
-
-      .o_it_helpdesk_sidebar_chevron {
-        display: inline-block;
-      }
-    }
 
     &.o_it_helpdesk_sidebar_mobile_open {
       transform: translateX(0);
@@ -300,9 +252,5 @@ body.o_it_helpdesk_sidebar_active {
     left: 0;
     display: block;
     background: rgba(15, 23, 42, 0.48);
-  }
-
-  .o_it_helpdesk_sidebar_collapse {
-    display: none;
   }
 }

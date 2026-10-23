@@ -21,7 +21,6 @@
             <aside
                 t-att-class="{
                     'o_it_helpdesk_sidebar': true,
-                    'o_it_helpdesk_sidebar_collapsed': state.isCollapsed,
                     'o_it_helpdesk_sidebar_mobile_open': state.isMobileOpen,
                 }"
                 aria-label="IT Helpdesk 내비게이션"
@@ -66,7 +65,7 @@
                                 <i class="fa fa-angle-down o_it_helpdesk_sidebar_chevron" aria-hidden="true" />
                             </button>
                             <div
-                                t-if="this.isExpanded(menu) &amp;&amp; (!state.isCollapsed || ui.isSmall)"
+                                t-if="this.isExpanded(menu)"
                                 class="o_it_helpdesk_sidebar_submenu"
                             >
                                 <a
@@ -104,20 +103,6 @@
                     </t>
                 </nav>
 
-                <div class="o_it_helpdesk_sidebar_footer">
-                    <button
-                        type="button"
-                        class="o_it_helpdesk_sidebar_item o_it_helpdesk_sidebar_collapse"
-                        t-att-title="state.isCollapsed ? '사이드바 펼치기' : '사이드바 접기'"
-                        t-on-click="toggleCollapsed"
-                    >
-                        <i
-                            t-att-class="state.isCollapsed ? 'fa fa-angle-double-right' : 'fa fa-angle-double-left'"
-                            aria-hidden="true"
-                        />
-                        <span class="o_it_helpdesk_sidebar_label">사이드바 접기</span>
-                    </button>
-                </div>
             </aside>
         </t>
     </t>
