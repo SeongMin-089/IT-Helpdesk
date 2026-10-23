@@ -622,7 +622,10 @@
       padding: 0.55rem 0.9rem;
       border-radius: 0.65rem;
       font-weight: 650;
-      transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+      transition:
+        background 120ms ease,
+        border-color 120ms ease,
+        color 120ms ease;
     }
 
     .btn-outline-primary {
@@ -630,7 +633,8 @@
       border-color: #d9e6f7 !important;
       background: #fff !important;
 
-      &:hover, &:focus-visible {
+      &:hover,
+      &:focus-visible {
         color: #2563eb !important;
         border-color: #a4c4ef !important;
         background: #eff6ff !important;
@@ -642,7 +646,8 @@
       border-color: #3276d2 !important;
       background: #3276d2 !important;
 
-      &:hover, &:focus-visible {
+      &:hover,
+      &:focus-visible {
         border-color: #2565b8 !important;
         background: #2565b8 !important;
       }
@@ -650,3 +655,22 @@
   }
 }
 // DAY08_BADGE_SHORTCUTS_END
+
+// 대시보드 FAQ 관리 버튼 색상 통일
+.o_it_helpdesk_dashboard {
+  .o_it_helpdesk_faq_management_header {
+    .btn-outline-primary {
+      color: #315b8a !important;
+      background: #ffffff !important;
+      border: 1px solid #d9e6f7 !important;
+      border-radius: 0.65rem;
+
+      &:hover,
+      &:focus-visible {
+        color: #2468bd !important;
+        background: #f0f6ff !important;
+        border-color: #9fc2ef !important;
+      }
+    }
+  }
+}
