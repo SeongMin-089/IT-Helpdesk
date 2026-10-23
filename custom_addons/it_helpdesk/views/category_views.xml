@@ -7,6 +7,10 @@
             <list string="문의 유형">
                 <field name="name" />
                 <field name="code" />
+                <field
+                    name="default_user_id"
+                    options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
+                />
                 <field name="description" />
                 <field name="active" />
             </list>
@@ -22,6 +26,10 @@
                     <group>
                         <field name="name" />
                         <field name="code" />
+                        <field
+                            name="default_user_id"
+                            options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
+                        />
                         <field name="active" />
                     </group>
                     <group string="설명">

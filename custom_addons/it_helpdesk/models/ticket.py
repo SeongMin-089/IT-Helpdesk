@@ -400,6 +400,7 @@ class HelpdeskTicket(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         vals_list = [dict(vals) for vals in vals_list]
+        auto_assignment_user_ids = []
         if not self.env.su:
             is_agent = self.env.user.has_group("it_helpdesk.group_it_helpdesk_agent")
             is_employee = self.env.user.has_group("it_helpdesk.group_it_helpdesk_user")
@@ -452,6 +453,30 @@ class HelpdeskTicket(models.Model):
             self._validate_ticket_values(vals)
             if "contact" in vals:
                 vals["contact"] = self._format_contact(vals["contact"])
+            # 클라이언트 입력 검증이 끝난 뒤 서버가 유형의 기본 담당자를
+            # 검증하여 신규 문의에만 자동 배정을 적용한다.
+            auto_agent = self.env["res.users"]
+            if (
+                not vals.get("assigned_user_id")
+                and vals.get("state", "received") == "received"
+                and vals.get("category_id")
+            ):
+                category = (
+                    self.env["it.helpdesk.category"]
+                    .sudo()
+                    .browse(vals["category_id"])
+                    .exists()
+                )
+                candidate = category.default_user_id if category else auto_agent
+                if category and category._is_valid_default_user(candidate):
+                    auto_agent = candidate
+                    vals.update(
+                        {
+                            "assigned_user_id": auto_agent.id,
+                            "state": "assigned",
+                        }
+                    )
+            auto_assignment_user_ids.append(auto_agent.id)
         # 서버에서 문의 번호 자동 발급. 기존 데이터나 조정된 시퀀스와
         # 충돌하더라도 새 문의에는 이미 사용 중인 번호를 부여하지 않는다.
         for vals in vals_list:
@@ -472,7 +497,24 @@ class HelpdeskTicket(models.Model):
                     "고유한 문의 번호를 발급할 수 없습니다. "
                     "문의 번호 시퀀스를 확인해 주세요."
                 )
-        return super().create(vals_list)
+        tickets = super().create(vals_list)
+        history_values = [
+            {
+                "ticket_id": ticket.id,
+                "change_type": "assignment",
+                "old_value": "미배정",
+                "new_value": ticket.assigned_user_id.name,
+                "changed_by": self.env.user.id,
+                "description": "문의 유형에 따른 담당자 자동 배정",
+            }
+            for ticket, user_id in zip(tickets, auto_assignment_user_ids)
+            if user_id
+        ]
+        if history_values:
+            # 일반 직원은 History 생성 ACL이 없으므로 서버 업무로 기록한다.
+            # Ticket 생성과 같은 트랜잭션이어서 기록 실패 시 함께 롤백된다.
+            self.env["it.helpdesk.history"].sudo().create(history_values)
+        return tickets
 
     @api.constrains("reference")
     def _check_reference_unique(self):
@@ -630,7 +672,7 @@ class HelpdeskTicket(models.Model):
         if self.state == "closed":
             raise UserError("종료된 문의는 담당자를 변경할 수 없습니다.")
         new_agent = self.env["res.users"].browse(user_id).exists()
-        if not new_agent or not new_agent.active:
+        if not new_agent or not new_agent.active or new_agent.share:
             raise ValidationError("유효한 담당자를 선택해 주세요.")
         if not new_agent.has_group("it_helpdesk.group_it_helpdesk_agent"):
             raise ValidationError(
