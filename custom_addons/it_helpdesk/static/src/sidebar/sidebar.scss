@@ -2,16 +2,25 @@ $it-helpdesk-sidebar-width: 264px;
 $it-helpdesk-sidebar-collapsed-width: 76px;
 
 body.o_it_helpdesk_sidebar_active {
+  --it-helpdesk-sidebar-current-width: #{$it-helpdesk-sidebar-width};
+
   .o_web_client > .o_action_manager {
+    align-self: flex-start;
+    box-sizing: border-box;
+    flex: 1 1 auto;
     min-width: 0;
-    margin-left: $it-helpdesk-sidebar-width;
-    transition: margin-left 160ms ease;
+    width: calc(100% - var(--it-helpdesk-sidebar-current-width));
+    max-width: calc(100% - var(--it-helpdesk-sidebar-current-width));
+    margin-left: var(--it-helpdesk-sidebar-current-width);
+    overflow-x: hidden;
+    transition:
+      width 160ms ease,
+      max-width 160ms ease,
+      margin-left 160ms ease;
   }
 
   &.o_it_helpdesk_sidebar_collapsed {
-    .o_web_client > .o_action_manager {
-      margin-left: $it-helpdesk-sidebar-collapsed-width;
-    }
+    --it-helpdesk-sidebar-current-width: #{$it-helpdesk-sidebar-collapsed-width};
   }
 }
 
@@ -208,7 +217,12 @@ body.o_it_helpdesk_sidebar_active {
 @media (max-width: 767.98px) {
   body.o_it_helpdesk_sidebar_active,
   body.o_it_helpdesk_sidebar_active.o_it_helpdesk_sidebar_collapsed {
+    --it-helpdesk-sidebar-current-width: 0px;
+
     .o_web_client > .o_action_manager {
+      align-self: stretch;
+      width: 100%;
+      max-width: 100%;
       margin-left: 0;
     }
   }
