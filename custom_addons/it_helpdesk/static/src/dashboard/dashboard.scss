@@ -219,6 +219,63 @@
     gap: 0.7rem;
   }
 
+  .o_it_helpdesk_assignment_grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+  }
+
+  .o_it_helpdesk_assignment_card {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 118px;
+    padding: 0.9rem;
+    border: 1px solid var(--it-helpdesk-border);
+    border-radius: 0.75rem;
+    color: inherit;
+    text-align: left;
+    background: #fbfcfe;
+    cursor: pointer;
+    transition:
+      border-color 120ms ease,
+      box-shadow 120ms ease,
+      transform 120ms ease;
+
+    &:hover,
+    &:focus-visible {
+      border-color: #9fc2ef;
+      box-shadow: 0 8px 20px rgba(50, 118, 210, 0.1);
+      transform: translateY(-1px);
+      outline: none;
+    }
+  }
+
+  .o_it_helpdesk_assignment_heading {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--it-helpdesk-muted);
+    font-size: 0.84rem;
+    font-weight: 650;
+
+    .fa {
+      color: var(--it-helpdesk-blue);
+    }
+  }
+
+  .o_it_helpdesk_assignment_value {
+    margin: 0.15rem 0 auto;
+    font-size: 1.7rem;
+    line-height: 1.25;
+  }
+
+  .o_it_helpdesk_assignment_link {
+    color: var(--it-helpdesk-blue);
+    font-size: 0.76rem;
+    font-weight: 650;
+  }
+
   .o_it_helpdesk_priority_box {
     display: flex;
     align-items: center;
@@ -521,7 +578,8 @@
   @media (max-width: 480px) {
     .o_it_helpdesk_kpi_grid,
     .o_it_helpdesk_faq_kpi_grid,
-    .o_it_helpdesk_priority_grid {
+    .o_it_helpdesk_priority_grid,
+    .o_it_helpdesk_assignment_grid {
       grid-template-columns: 1fr;
     }
 

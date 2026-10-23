@@ -274,6 +274,64 @@ class HelpdeskTicket(models.Model):
             order="create_date desc, id desc",
             limit=5,
         )
+        my_assignment_domain = [
+            ("active", "=", True),
+            ("assigned_user_id", "=", self.env.uid),
+        ]
+
+        def count_my_assignment(extra_domain=None):
+            return self.search_count(
+                my_assignment_domain + (extra_domain or [])
+            )
+
+        my_assignment = [
+            {
+                "key": "total",
+                "label": "내 담당 전체",
+                "count": count_my_assignment(),
+                "domain": [],
+            },
+            {
+                "key": "waiting",
+                "label": "처리 대기",
+                "count": count_my_assignment([("state", "=", "assigned")]),
+                "domain": [["state", "=", "assigned"]],
+            },
+            {
+                "key": "processing",
+                "label": "진행 중",
+                "count": count_my_assignment(
+                    [
+                        (
+                            "state",
+                            "in",
+                            [
+                                "in_progress",
+                                "reopen_requested",
+                                "reopened_in_progress",
+                            ],
+                        )
+                    ]
+                ),
+                "domain": [
+                    [
+                        "state",
+                        "in",
+                        [
+                            "in_progress",
+                            "reopen_requested",
+                            "reopened_in_progress",
+                        ],
+                    ]
+                ],
+            },
+            {
+                "key": "resolved",
+                "label": "해결 대기",
+                "count": count_my_assignment([("state", "=", "resolved")]),
+                "domain": [["state", "=", "resolved"]],
+            },
+        ]
         return {
             "role": "agent",
             "kpis": [
@@ -339,6 +397,7 @@ class HelpdeskTicket(models.Model):
             ],
             "state_distribution": state_distribution,
             "priority_distribution": priority_distribution,
+            "my_assignment": my_assignment,
             "recent_tickets": serialize(recent_tickets),
             "urgent_tickets": serialize(urgent_tickets),
             **faq_dashboard_data,

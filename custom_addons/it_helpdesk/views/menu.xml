@@ -40,11 +40,37 @@
     <!-- F-03 담당자용 전체 문의 목록 -->
     <menuitem
         id="menu_it_helpdesk_ticket_list"
-        name="문의 목록"
+        name="전체 문의"
         parent="menu_it_helpdesk_tickets"
         action="action_it_helpdesk_ticket"
         groups="it_helpdesk.group_it_helpdesk_agent"
         sequence="10"
+    />
+
+    <!-- IT 담당자용 내 담당 문의 액션 -->
+    <record id="action_it_helpdesk_my_assigned_tickets" model="ir.actions.act_window">
+        <field name="name">내 담당 문의</field>
+        <field name="res_model">it.helpdesk.ticket</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('assigned_user_id', '=', uid), ('active', '=', True)]</field>
+        <field name="search_view_id" ref="view_it_helpdesk_ticket_search" />
+    </record>
+
+    <!-- 기존 담당자용 문의 List View 재사용 -->
+    <record id="action_it_helpdesk_my_assigned_tickets_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1" />
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_it_helpdesk_ticket_list" />
+        <field name="act_window_id" ref="action_it_helpdesk_my_assigned_tickets" />
+    </record>
+
+    <menuitem
+        id="menu_it_helpdesk_my_assigned_tickets"
+        name="내 담당 문의"
+        parent="menu_it_helpdesk_tickets"
+        action="action_it_helpdesk_my_assigned_tickets"
+        groups="it_helpdesk.group_it_helpdesk_agent"
+        sequence="15"
     />
 
     <!-- F-02 내 문의 목록 액션 -->

@@ -82,21 +82,27 @@
                     <section t-if="isAgent" class="o_it_helpdesk_panel">
                         <div class="o_it_helpdesk_panel_header">
                             <div>
-                                <h2>긴급도별 문의 분포</h2>
-                                <p>업무 우선순위별 활성 문의입니다.</p>
+                                <h2>내 담당 문의 현황</h2>
+                                <p>현재 나에게 배정된 활성 문의입니다.</p>
                             </div>
                         </div>
-                        <div class="o_it_helpdesk_priority_grid">
+                        <div class="o_it_helpdesk_assignment_grid">
                             <button
-                                t-foreach="state.data.priority_distribution"
+                                t-foreach="state.data.my_assignment"
                                 t-as="item"
                                 t-key="item.key"
                                 type="button"
-                                t-att-class="'o_it_helpdesk_priority_box ' + this.priorityClass(item.key)"
-                                t-on-click="() => this.openTickets([['priority', '=', item.key]])"
+                                t-att-class="'o_it_helpdesk_assignment_card o_it_helpdesk_assignment_' + item.key"
+                                t-on-click="() => this.openMyAssignedTickets(item.domain)"
                             >
-                                <span t-esc="item.label" />
-                                <strong t-esc="item.count" />
+                                <span class="o_it_helpdesk_assignment_heading">
+                                    <i class="fa fa-user-circle-o" aria-hidden="true" />
+                                    <span t-esc="item.label" />
+                                </span>
+                                <strong class="o_it_helpdesk_assignment_value" t-esc="item.count" />
+                                <span class="o_it_helpdesk_assignment_link">
+                                    문의 보기 <i class="fa fa-arrow-right" aria-hidden="true" />
+                                </span>
                             </button>
                         </div>
                     </section>

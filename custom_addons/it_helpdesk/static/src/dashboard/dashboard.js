@@ -96,6 +96,18 @@ export class HelpdeskDashboard extends Component {
         );
     }
 
+    async openMyAssignedTickets(domain = []) {
+        const loadedAction = await this.actionService.loadAction(
+            "it_helpdesk.action_it_helpdesk_my_assigned_tickets"
+        );
+        const action = { ...loadedAction };
+        action.domain = [
+            ...(Array.isArray(loadedAction.domain) ? loadedAction.domain : []),
+            ...domain,
+        ];
+        return this.actionService.doAction(action);
+    }
+
     async openPublicFaq(faqId) {
         const action = await this.orm.call(
             "it.helpdesk.faq",

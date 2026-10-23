@@ -5,6 +5,7 @@ from lxml import etree
 from odoo import fields
 from odoo.exceptions import AccessError, UserError, ValidationError
 from odoo.tests import TransactionCase, new_test_user, tagged
+from odoo.tools.safe_eval import safe_eval
 
 
 @tagged("post_install", "-at_install", "it_helpdesk_day7")
@@ -451,6 +452,179 @@ class TestHelpdeskDay7(TransactionCase):
         self.assertFalse(archived_private.active)
         self.assertNotIn("recent_faqs", data)
         self.assertNotIn("source_ticket", str(data))
+
+    def test_my_assignment_dashboard_action_and_reassignment(self):
+        initial_agent = (
+            self.env["it.helpdesk.ticket"]
+            .with_user(self.agent)
+            .get_dashboard_data()
+        )
+        initial_other_agent = (
+            self.env["it.helpdesk.ticket"]
+            .with_user(self.other_agent)
+            .get_dashboard_data()
+        )
+        auto_category = (
+            self.env["it.helpdesk.category"]
+            .with_user(self.agent)
+            .create(
+                {
+                    "name": "Day 7 내 담당 자동 배정",
+                    "code": "DAY7_MY_AUTO",
+                    "default_user_id": self.agent.id,
+                }
+            )
+        )
+        manual_category = (
+            self.env["it.helpdesk.category"]
+            .with_user(self.agent)
+            .create(
+                {
+                    "name": "Day 7 내 담당 수동 배정",
+                    "code": "DAY7_MY_MANUAL",
+                }
+            )
+        )
+
+        auto_assigned = self._create_ticket("내 담당 자동", auto_category)
+        manual_assigned = self._create_ticket("내 담당 수동", manual_category)
+        manual_assigned.with_user(self.agent).action_assign_to(self.agent.id)
+
+        reassigned = self._create_ticket("내 담당 재배정", manual_category)
+        reassigned.with_user(self.agent).action_assign_to(self.agent.id)
+        reassigned.with_user(self.agent).action_assign_to(self.other_agent.id)
+
+        other_assigned = self._create_ticket("타 담당자", manual_category)
+        other_assigned.with_user(self.agent).action_assign_to(self.other_agent.id)
+
+        archived = self._create_ticket("내 담당 보관", manual_category)
+        archived.with_user(self.agent).action_assign_to(self.agent.id)
+        archived.with_user(self.agent).write({"active": False})
+
+        in_progress = self._create_ticket("내 담당 진행", manual_category)
+        in_progress.with_user(self.agent).action_assign_to(self.agent.id)
+        in_progress.sudo()._write_workflow({"state": "in_progress"})
+        reopen_requested = self._create_ticket("내 담당 재처리 요청", manual_category)
+        reopen_requested.with_user(self.agent).action_assign_to(self.agent.id)
+        reopen_requested.sudo()._write_workflow({"state": "reopen_requested"})
+        reopened = self._create_ticket("내 담당 재처리 진행", manual_category)
+        reopened.with_user(self.agent).action_assign_to(self.agent.id)
+        reopened.sudo()._write_workflow({"state": "reopened_in_progress"})
+        resolved = self._create_ticket("내 담당 해결", manual_category)
+        resolved.with_user(self.agent).action_assign_to(self.agent.id)
+        resolved.sudo()._write_workflow({"state": "resolved"})
+        closed = self._create_ticket("내 담당 종료", manual_category)
+        closed.with_user(self.agent).action_assign_to(self.agent.id)
+        closed.sudo()._write_workflow({"state": "closed"})
+
+        agent_data = (
+            self.env["it.helpdesk.ticket"]
+            .with_user(self.agent)
+            .get_dashboard_data()
+        )
+        other_agent_data = (
+            self.env["it.helpdesk.ticket"]
+            .with_user(self.other_agent)
+            .get_dashboard_data()
+        )
+        agent_counts = {
+            item["key"]: item["count"] for item in agent_data["my_assignment"]
+        }
+        initial_agent_counts = {
+            item["key"]: item["count"]
+            for item in initial_agent["my_assignment"]
+        }
+        other_counts = {
+            item["key"]: item["count"]
+            for item in other_agent_data["my_assignment"]
+        }
+        initial_other_counts = {
+            item["key"]: item["count"]
+            for item in initial_other_agent["my_assignment"]
+        }
+        self.assertEqual(
+            {
+                key: count - initial_agent_counts[key]
+                for key, count in agent_counts.items()
+            },
+            {"total": 7, "waiting": 2, "processing": 3, "resolved": 1},
+        )
+        self.assertEqual(other_counts["total"] - initial_other_counts["total"], 2)
+        self.assertEqual(
+            other_counts["waiting"] - initial_other_counts["waiting"], 2
+        )
+        self.assertEqual(agent_data["faq_kpis"], initial_agent["faq_kpis"])
+        self.assertTrue(closed.active)
+
+        action = self.env.ref(
+            "it_helpdesk.action_it_helpdesk_my_assigned_tickets"
+        )
+        action_domain = safe_eval(action.domain, {"uid": self.agent.id})
+        action_tickets = self.env["it.helpdesk.ticket"].with_user(
+            self.agent
+        ).search(action_domain)
+        for ticket in (
+            auto_assigned,
+            manual_assigned,
+            in_progress,
+            reopen_requested,
+            reopened,
+            resolved,
+            closed,
+        ):
+            self.assertIn(ticket, action_tickets)
+        for ticket in (reassigned, other_assigned, archived):
+            self.assertNotIn(ticket, action_tickets)
+
+        cards = {item["key"]: item for item in agent_data["my_assignment"]}
+        expected_card_ids = {
+            "total": {
+                auto_assigned.id,
+                manual_assigned.id,
+                in_progress.id,
+                reopen_requested.id,
+                reopened.id,
+                resolved.id,
+                closed.id,
+            },
+            "waiting": {auto_assigned.id, manual_assigned.id},
+            "processing": {
+                in_progress.id,
+                reopen_requested.id,
+                reopened.id,
+            },
+            "resolved": {resolved.id},
+        }
+        for key, expected_ids in expected_card_ids.items():
+            filtered = action_tickets.filtered_domain(cards[key]["domain"])
+            self.assertTrue(expected_ids.issubset(set(filtered.ids)))
+
+        employee_data = (
+            self.env["it.helpdesk.ticket"]
+            .with_user(self.requester)
+            .get_dashboard_data()
+        )
+        self.assertNotIn("my_assignment", employee_data)
+        self.assertIn("recent_faqs", employee_data)
+        menu = self.env.ref("it_helpdesk.menu_it_helpdesk_my_assigned_tickets")
+        agent_group = self.env.ref("it_helpdesk.group_it_helpdesk_agent")
+        employee_group = self.env.ref("it_helpdesk.group_it_helpdesk_user")
+        self.assertIn(agent_group, menu.group_ids)
+        self.assertNotIn(employee_group, menu.group_ids)
+        self.assertEqual(menu.action, action)
+
+    def test_my_assignment_dashboard_zero_state(self):
+        empty_agent = new_test_user(
+            self.env,
+            login="helpdesk_day7_empty_agent",
+            groups="it_helpdesk.group_it_helpdesk_agent",
+        )
+        data = (
+            self.env["it.helpdesk.ticket"]
+            .with_user(empty_agent)
+            .get_dashboard_data()
+        )
+        self.assertFalse(any(item["count"] for item in data["my_assignment"]))
 
     def test_day6_auto_assignment_and_dashboard_regression(self):
         category = (
