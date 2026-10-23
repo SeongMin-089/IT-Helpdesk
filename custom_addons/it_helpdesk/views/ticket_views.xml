@@ -244,7 +244,8 @@
                     </group>
 
                     <!-- 변경 이력 -->
-                    <group string="변경 이력" class="o_it_helpdesk_history_section" invisible="not id">
+                    <div class="o_it_helpdesk_history_section" invisible="not id">
+                        <separator string="변경 이력" />
                         <field
                             name="history_ids"
                             nolabel="1"
@@ -281,7 +282,7 @@
                                 />
                             </list>
                         </field>
-                    </group>
+                    </div>
                 </sheet>
 
                 <chatter />

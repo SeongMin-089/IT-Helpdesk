@@ -399,6 +399,10 @@ body.o_it_helpdesk_sidebar_active {
 
     .o_it_helpdesk_ticket_form {
       .o_it_helpdesk_history_section {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100%;
         min-width: 0;
 
         .o_field_x2many,
