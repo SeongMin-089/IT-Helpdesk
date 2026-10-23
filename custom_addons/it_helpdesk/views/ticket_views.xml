@@ -32,7 +32,7 @@
         <field name="name">it.helpdesk.ticket.form</field>
         <field name="model">it.helpdesk.ticket</field>
         <field name="arch" type="xml">
-            <form string="IT 장애 문의">
+            <form string="IT 장애 문의" class="o_it_helpdesk_ticket_form">
                 <header>
                     <!-- 담당자 미배정: 신규 배정 -->
                     <button
@@ -244,7 +244,7 @@
                     </group>
 
                     <!-- 변경 이력 -->
-                    <group string="변경 이력" invisible="not id">
+                    <group string="변경 이력" class="o_it_helpdesk_history_section" invisible="not id">
                         <field
                             name="history_ids"
                             nolabel="1"

@@ -21,7 +21,7 @@
         <field name="name">it.helpdesk.category.form</field>
         <field name="model">it.helpdesk.category</field>
         <field name="arch" type="xml">
-            <form string="문의 유형">
+            <form string="문의 유형" class="o_it_helpdesk_category_form">
                 <sheet>
                     <group>
                         <field name="name" />

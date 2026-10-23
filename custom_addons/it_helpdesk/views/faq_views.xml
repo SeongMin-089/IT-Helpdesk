@@ -25,7 +25,7 @@
                 create="false"
                 edit="false"
                 delete="false"
-                class="o_it_helpdesk_faq_form"
+                class="o_it_helpdesk_faq_form o_it_helpdesk_faq_public_form"
             >
                 <sheet>
                     <group>
@@ -113,7 +113,7 @@
             <form
                 string="FAQ 관리"
                 delete="false"
-                class="o_it_helpdesk_faq_form"
+                class="o_it_helpdesk_faq_form o_it_helpdesk_faq_management_form"
             >
                 <header>
                     <button
