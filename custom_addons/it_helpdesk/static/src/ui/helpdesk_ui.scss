@@ -110,3 +110,53 @@ body.o_it_helpdesk_sidebar_active {
     }
   }
 }
+
+// DAY08_BADGE_SHORTCUTS_START
+// Match the existing dashboard's muted state and priority badges.
+// Only the ticket lists: other Odoo apps and dashboard badges are unchanged.
+body.o_it_helpdesk_sidebar_active {
+  .o_action_manager .o_list_view .o_list_table {
+    td[name="priority"],
+    td[name="state"] {
+      .badge {
+        border: 0 !important;
+        border-radius: 999px !important;
+        padding: 0.22rem 0.48rem !important;
+        font-size: 0.72rem !important;
+        font-weight: 700 !important;
+        line-height: 1.4;
+        box-shadow: none !important;
+      }
+    }
+
+    // Priority: same colors as dashboard.scss
+    td[name="priority"] .badge {
+      &.text-bg-300 { color: #667085 !important; background: #f2f4f7 !important; }
+      &.text-bg-info { color: #2468bd !important; background: #eaf2fc !important; }
+      &.text-bg-warning { color: #b54708 !important; background: #fff1e5 !important; }
+      &.text-bg-danger { color: #c92a2a !important; background: #fff0f0 !important; }
+    }
+
+    // State: subtle colors by stage, not saturated Bootstrap fills.
+    // Based on existing ticket_views.xml decoration classes.
+    td[name="state"] .badge {
+      &.text-bg-300 {
+        color: #667085 !important;
+        background: #f2f4f7 !important; // received
+      }
+      &.text-bg-info {
+        color: #315b8a !important;
+        background: #eaf2fc !important; // assigned / in progress / reopened in progress
+      }
+      &.text-bg-warning {
+        color: #b54708 !important;
+        background: #fff1e5 !important; // reopen requested
+      }
+      &.text-bg-success {
+        color: #21734a !important;
+        background: #e8f7ed !important; // resolved / closed
+      }
+    }
+  }
+}
+// DAY08_BADGE_SHORTCUTS_END

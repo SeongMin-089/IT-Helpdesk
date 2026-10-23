@@ -131,7 +131,7 @@
                                     <strong t-esc="ticket.name" />
                                     <small t-if="isAgent" t-esc="ticket.requester_name" />
                                 </span>
-                                <span class="o_it_helpdesk_status" t-esc="ticket.state_label" />
+                                <span t-att-class="'o_it_helpdesk_status o_it_helpdesk_status_' + ticket.state" t-esc="ticket.state_label" />
                                 <span t-att-class="'o_it_helpdesk_priority_badge ' + this.priorityClass(ticket.priority)" t-esc="ticket.priority_label" />
                                 <time t-esc="this.formatCreatedAt(ticket.create_date)" />
                             </button>
@@ -170,7 +170,7 @@
                                     <strong t-esc="ticket.name" />
                                     <small t-esc="ticket.requester_name" />
                                 </span>
-                                <span class="o_it_helpdesk_status" t-esc="ticket.state_label" />
+                                <span t-att-class="'o_it_helpdesk_status o_it_helpdesk_status_' + ticket.state" t-esc="ticket.state_label" />
                                 <span class="o_it_helpdesk_priority_badge o_it_helpdesk_priority_urgent">긴급</span>
                                 <time t-esc="this.formatCreatedAt(ticket.create_date)" />
                             </button>

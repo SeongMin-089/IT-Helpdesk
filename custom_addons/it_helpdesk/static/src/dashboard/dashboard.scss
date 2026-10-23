@@ -356,9 +356,28 @@
     white-space: nowrap;
   }
 
+  // Seven ticket stages; same pastel palette as list view.
   .o_it_helpdesk_status {
+    color: #667085;
+    background: #f2f4f7; // received / fallback
+  }
+
+  .o_it_helpdesk_status_assigned,
+  .o_it_helpdesk_status_in_progress,
+  .o_it_helpdesk_status_reopened_in_progress {
     color: #315b8a;
     background: #eaf2fc;
+  }
+
+  .o_it_helpdesk_status_reopen_requested {
+    color: #b54708;
+    background: #fff1e5;
+  }
+
+  .o_it_helpdesk_status_resolved,
+  .o_it_helpdesk_status_closed {
+    color: #21734a;
+    background: #e8f7ed;
   }
 
   .o_it_helpdesk_priority_low {
@@ -588,3 +607,46 @@
     }
   }
 }
+
+// DAY08_BADGE_SHORTCUTS_START
+// Footer shortcuts previously inherited Odoo's purple outline-primary.
+// Keep their actions and icons: restyle only within the dashboard.
+.o_it_helpdesk_dashboard.o_action {
+  .o_it_helpdesk_shortcuts {
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      min-height: 38px;
+      padding: 0.55rem 0.9rem;
+      border-radius: 0.65rem;
+      font-weight: 650;
+      transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+    }
+
+    .btn-outline-primary {
+      color: #315b8a !important;
+      border-color: #d9e6f7 !important;
+      background: #fff !important;
+
+      &:hover, &:focus-visible {
+        color: #2563eb !important;
+        border-color: #a4c4ef !important;
+        background: #eff6ff !important;
+      }
+    }
+
+    .btn-primary {
+      color: #fff !important;
+      border-color: #3276d2 !important;
+      background: #3276d2 !important;
+
+      &:hover, &:focus-visible {
+        border-color: #2565b8 !important;
+        background: #2565b8 !important;
+      }
+    }
+  }
+}
+// DAY08_BADGE_SHORTCUTS_END
