@@ -30,11 +30,19 @@
                             name="default_user_id"
                             options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"
                         />
-                        <field name="active" />
+                        <field
+                            name="active"
+                            widget="boolean_toggle"
+                            class="o_it_helpdesk_category_active"
+                        />
                     </group>
-                    <group string="설명">
-                        <field name="description" nolabel="1" />
-                    </group>
+                    <separator string="설명" />
+                    <div class="o_it_helpdesk_category_description_block">
+                        <field
+                            name="description"
+                            nolabel="1"
+                        />
+                    </div>
                 </sheet>
             </form>
         </field>

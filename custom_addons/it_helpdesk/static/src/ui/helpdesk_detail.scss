@@ -1,4 +1,4 @@
-/*
+/**
  * IT-Helpdesk — Detail Page UI
  * Odoo 19 Community
  *
@@ -11,7 +11,9 @@
 body.o_it_helpdesk_sidebar_active {
   .o_action_manager {
     // =========================================
+
     // 1. 공통 상세 페이지
+
     // =========================================
 
     .o_it_helpdesk_ticket_form,
@@ -20,42 +22,62 @@ body.o_it_helpdesk_sidebar_active {
       --it-detail-gutter: var(--it-page-gutter, clamp(16px, 2.5vw, 32px));
 
       --it-detail-border: #e1e7f0;
+
       --it-detail-ink: #17233c;
+
       --it-detail-muted: #64748b;
 
       min-width: 0;
 
       // 상세 화면 신규 버튼 숨김
+
       .o_control_panel .o_form_button_create {
         display: none !important;
       }
 
       // =========================================
+
       // 2. 뒤로가기 아이콘 및 페이지 제목
+
       // =========================================
 
       .o_control_panel .o_breadcrumb {
         display: flex;
+
         flex-direction: column;
+
         align-items: flex-start;
+
         justify-content: center;
+
         gap: 5px;
+
         min-width: 0;
 
         > .breadcrumb {
           display: flex;
+
           flex-wrap: wrap;
+
           align-items: center;
+
           gap: 4px;
+
           margin: 0;
+
           padding: 0;
+
           line-height: 1;
 
           .breadcrumb-item.o_back_button {
             display: inline-flex;
+
             align-items: center;
+
             margin: 0;
+
             padding: 0;
+
             cursor: pointer;
 
             &::before {
@@ -64,27 +86,40 @@ body.o_it_helpdesk_sidebar_active {
 
             > a {
               display: inline-flex;
+
               align-items: center;
+
               justify-content: center;
 
               width: 20px;
+
               height: 20px;
+
               padding: 0;
 
               border: 0 !important;
+
               border-radius: 0 !important;
+
               background: transparent !important;
+
               box-shadow: none !important;
 
               color: #64748b !important;
+
               font-size: 0 !important;
+
               line-height: 1;
+
               text-decoration: none;
 
               &::before {
                 content: "\2190";
+
                 font-size: 17px;
+
                 font-weight: 600;
+
                 line-height: 1;
               }
 
@@ -98,41 +133,62 @@ body.o_it_helpdesk_sidebar_active {
 
         .o_last_breadcrumb_item {
           margin: 0;
+
           padding: 0;
+
           color: var(--it-detail-ink);
+
           font-size: clamp(1.5rem, 2vw, 1.85rem);
+
           font-weight: 800;
+
           line-height: 1.25;
+
           letter-spacing: -0.025em;
         }
       }
 
       // =========================================
+
       // 3. 폼 렌더러
+
       // =========================================
 
       .o_form_renderer {
         box-sizing: border-box;
+
         min-width: 0;
+
         max-width: none;
       }
 
       // =========================================
+
       // 4. 통합 카드 바깥 여백
+
       //
+
       // Odoo 실제 구조:
+
       // .o_form_sheet_bg
+
       //   ├── .o_form_statusbar
+
       //   └── .o_form_sheet
+
       //
+
       // 부모 패딩으로 좌우 여백 통일
+
       // =========================================
 
       .o_form_sheet_bg {
         box-sizing: border-box;
 
         width: 100% !important;
+
         min-width: 0;
+
         max-width: none !important;
 
         margin: 0 !important;
@@ -142,54 +198,78 @@ body.o_it_helpdesk_sidebar_active {
         background: transparent;
 
         // 처리 버튼과 본문이 같은 영역에서 스크롤
+
         overflow-x: hidden;
+
         overflow-y: auto;
       }
 
       // =========================================
+
       // 5. 처리 버튼 — 통합 카드 상단
+
       //
+
       // sticky 완전히 제거
+
       // =========================================
 
       .o_form_sheet_bg > .o_form_statusbar {
         position: relative !important;
+
         top: auto !important;
+
         right: auto !important;
+
         bottom: auto !important;
+
         left: auto !important;
 
         z-index: auto !important;
 
         box-sizing: border-box;
+
         display: flex;
+
         align-items: center;
+
         flex-wrap: wrap;
 
         width: 100% !important;
+
         min-width: 0;
+
         max-width: 100% !important;
 
         margin: 0 !important;
+
         padding: 14px 18px !important;
 
         border: 1px solid var(--it-detail-border);
+
         border-bottom: 0;
+
         border-radius: 12px 12px 0 0;
 
         background: #fff;
+
         box-shadow: none !important;
 
         .o_statusbar_buttons {
           display: flex;
+
           align-items: center;
+
           flex-wrap: wrap;
+
           gap: 8px;
 
           min-width: 0;
+
           max-width: 100%;
 
           margin: 0;
+
           padding: 0;
 
           background: transparent;
@@ -198,52 +278,69 @@ body.o_it_helpdesk_sidebar_active {
             flex: 0 0 auto;
 
             min-height: 35px;
+
             max-width: 100%;
 
             margin: 0 !important;
+
             padding: 7px 12px;
 
             border-radius: 8px;
+
             font-weight: 600;
+
             white-space: normal;
           }
         }
       }
 
       // =========================================
+
       // 6. 본문 — 통합 카드 하단
+
       // =========================================
 
       .o_form_sheet_bg > .o_form_sheet {
         box-sizing: border-box;
 
         width: 100% !important;
+
         min-width: 0;
+
         max-width: 100% !important;
 
         margin: 0 !important;
+
         padding: clamp(20px, 2vw, 30px);
 
         border: 1px solid var(--it-detail-border);
+
         border-top: 1px solid #eef1f5;
+
         border-radius: 0 0 12px 12px;
 
         background: #fff;
+
         box-shadow: 0 7px 22px rgba(23, 35, 60, 0.045);
       }
 
       // 처리 버튼이 없는 상세 페이지는 전체 둥근 모서리
+
       .o_form_sheet_bg:not(:has(> .o_form_statusbar)) > .o_form_sheet {
         border-radius: 12px;
+
         border-top: 1px solid var(--it-detail-border);
       }
 
       // =========================================
+
       // 7. 본문 섹션 간격 및 제목
+
       // =========================================
 
       .o_form_sheet .o_group {
         min-width: 0;
+
         margin-bottom: 14px;
       }
 
@@ -253,17 +350,21 @@ body.o_it_helpdesk_sidebar_active {
 
       .o_form_sheet .o_horizontal_separator {
         margin: 0 0 12px;
+
         padding: 0 0 9px;
 
         border-bottom: 1px solid var(--it-detail-border);
 
         color: var(--it-detail-ink);
+
         font-size: 1.02rem;
+
         font-weight: 750;
       }
 
       .o_form_sheet .o_form_label {
         color: var(--it-detail-muted);
+
         font-weight: 650;
       }
 
@@ -272,7 +373,9 @@ body.o_it_helpdesk_sidebar_active {
       }
 
       // =========================================
+
       // 8. 입력 필드
+
       // =========================================
 
       .o_form_sheet {
@@ -289,7 +392,9 @@ body.o_it_helpdesk_sidebar_active {
     }
 
     // ===========================================
+
     // 9. 문의 상세 — 변경 이력
+
     // ===========================================
 
     .o_it_helpdesk_ticket_form {
@@ -299,46 +404,61 @@ body.o_it_helpdesk_sidebar_active {
         .o_field_x2many,
         .o_list_renderer {
           box-sizing: border-box;
+
           min-width: 0;
+
           width: 100%;
+
           max-width: 100%;
         }
 
         .o_list_renderer {
           overflow-x: auto;
+
           border: 1px solid var(--it-detail-border);
+
           border-radius: 9px;
         }
 
         .o_list_table {
           width: 100%;
+
           min-width: 690px;
+
           table-layout: auto;
 
           th,
           td {
             padding: 10px 12px;
+
             vertical-align: top;
           }
 
           td {
             white-space: normal;
+
             overflow-wrap: anywhere;
+
             line-height: 1.45;
           }
         }
       }
 
       // Chatter 레이아웃 및 기능 유지
+
       .o-mail-ChatterContainer {
         min-width: 0;
+
         border-left: 1px solid #e6ebf2;
+
         background: #fff;
       }
     }
 
     // ===========================================
+
     // 10. FAQ 상세 / FAQ 관리 상세
+
     // ===========================================
 
     .o_it_helpdesk_faq_public_form,
@@ -348,21 +468,27 @@ body.o_it_helpdesk_sidebar_active {
         display: block;
 
         width: 100%;
+
         min-width: 0;
+
         max-width: 100%;
 
         overflow-wrap: anywhere;
+
         line-height: 1.7;
       }
 
       .o_it_helpdesk_faq_answer textarea {
         min-height: 170px;
+
         resize: vertical;
       }
     }
 
     // ===========================================
+
     // 11. 문의 유형 상세
+
     // ===========================================
 
     .o_it_helpdesk_category_form {
@@ -370,14 +496,39 @@ body.o_it_helpdesk_sidebar_active {
         margin-bottom: 18px;
       }
 
-      .o_form_sheet textarea {
-        min-height: 120px;
-        resize: vertical;
+      // The category description is placed outside Odoo's narrow group grid.
+      .o_it_helpdesk_category_description_block {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        margin: 14px 0 20px;
+
+        // Odoo's field widget can otherwise keep its intrinsic narrow width.
+        .o_field_widget,
+        .o_field_text,
+        .o_field_text textarea {
+          display: block;
+          box-sizing: border-box;
+          width: 100% !important;
+          min-width: 0;
+          max-width: 100% !important;
+        }
+
+        textarea {
+          min-height: 150px;
+          padding: 12px 14px;
+          resize: none !important;
+          line-height: 1.6;
+        }
       }
     }
 
     // ===========================================
+
     // 12. 반응형
+
     // ===========================================
 
     @media (max-width: 767.98px) {
@@ -392,6 +543,90 @@ body.o_it_helpdesk_sidebar_active {
 
         .o_form_sheet_bg > .o_form_sheet {
           padding: 16px;
+        }
+      }
+    }
+  }
+}
+
+// 문의 유형 활성 토글 UI 복구
+body.o_it_helpdesk_sidebar_active {
+  .o_it_helpdesk_category_form {
+    .o_it_helpdesk_category_active {
+      display: inline-flex;
+      align-items: center;
+      min-width: 52px;
+      min-height: 28px;
+
+      .o-checkbox,
+      .o_boolean_toggle,
+      .form-switch {
+        display: inline-flex;
+        align-items: center;
+        width: 52px;
+        min-width: 52px;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      input[type="checkbox"].form-check-input {
+        appearance: none !important;
+        -webkit-appearance: none !important;
+
+        display: block !important;
+        float: none !important;
+        flex: 0 0 44px;
+
+        width: 44px !important;
+        min-width: 44px !important;
+        height: 24px !important;
+
+        margin: 0 !important;
+        padding: 0 !important;
+
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 999px !important;
+
+        background-color: #cbd5e1 !important;
+        background-image: none !important;
+
+        cursor: pointer;
+        position: relative;
+        transition: background-color 150ms ease;
+
+        &::before {
+          content: "";
+          position: absolute;
+          top: 2px;
+          left: 2px;
+
+          width: 18px;
+          height: 18px;
+
+          border-radius: 50%;
+          background: #ffffff;
+
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+          transition: transform 150ms ease;
+        }
+
+        &:checked {
+          background-color: #3276d2 !important;
+          border-color: #3276d2 !important;
+
+          &::before {
+            transform: translateX(20px);
+          }
+        }
+
+        &:focus-visible {
+          outline: 3px solid rgba(50, 118, 210, 0.2);
+          outline-offset: 2px;
+        }
+
+        &:disabled {
+          cursor: default;
+          opacity: 0.6;
         }
       }
     }
