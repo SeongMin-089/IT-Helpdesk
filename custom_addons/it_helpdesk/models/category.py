@@ -5,7 +5,7 @@ from odoo.exceptions import ValidationError
 class HelpdeskCategory(models.Model):
     _name = "it.helpdesk.category"
     _description = "IT Helpdesk Category"
-    _order = "name"
+    _order = "sort_priority, name, id"
 
     _code_unique = models.Constraint(
         "UNIQUE (code)",
@@ -26,6 +26,18 @@ class HelpdeskCategory(models.Model):
         string="설명",
     )
 
+    # 기타 유형을 항상 마지막에 표시
+    sort_priority = fields.Integer(
+        string="정렬 우선순위",
+        compute="_compute_sort_priority",
+        store=True,
+    )
+
+    @api.depends("code")
+    def _compute_sort_priority(self):
+        for category in self:
+            category.sort_priority = 99 if category.code == "ETC" else 10
+
     default_user_id = fields.Many2one(
         "res.users",
         string="기본 담당자",
@@ -42,9 +54,7 @@ class HelpdeskCategory(models.Model):
                     ]
                 )
                 .filtered(
-                    lambda user: user.has_group(
-                        "it_helpdesk.group_it_helpdesk_agent"
-                    )
+                    lambda user: user.has_group("it_helpdesk.group_it_helpdesk_agent")
                 )
                 .ids,
             )

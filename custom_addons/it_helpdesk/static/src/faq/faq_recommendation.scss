@@ -1,0 +1,66 @@
+.o_it_helpdesk_faq_field {
+  width: 100%;
+
+  .o_it_helpdesk_faq_recommendations {
+    margin-top: 0.45rem;
+    overflow: hidden;
+    border: 1px solid #dbe5f1;
+    border-radius: 0.65rem;
+    background: #f8fbff;
+  }
+
+  .o_it_helpdesk_faq_heading,
+  .o_it_helpdesk_faq_hint {
+    margin: 0;
+    padding: 0.65rem 0.75rem;
+    font-size: 0.82rem;
+  }
+
+  .o_it_helpdesk_faq_heading {
+    color: #315b8a;
+    font-weight: 700;
+  }
+
+  .o_it_helpdesk_faq_results {
+    display: grid;
+  }
+
+  .o_it_helpdesk_faq_result {
+    display: grid;
+    gap: 0.25rem;
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 0;
+    border-top: 1px solid #e5edf6;
+    color: inherit;
+    text-align: left;
+    background: #fff;
+
+    &:hover,
+    &:focus-visible {
+      background: #eef6ff;
+      outline: none;
+    }
+  }
+
+  .o_it_helpdesk_faq_result_header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+
+    small {
+      flex: 0 0 auto;
+      color: #667085;
+    }
+  }
+
+  .o_it_helpdesk_faq_preview {
+    display: -webkit-box;
+    overflow: hidden;
+    color: #667085;
+    font-size: 0.78rem;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+}

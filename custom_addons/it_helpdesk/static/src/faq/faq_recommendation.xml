@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="it_helpdesk.FaqRecommendationField">
+        <div class="o_it_helpdesk_faq_field">
+            <t t-call="web.CharField" />
+
+            <section
+                t-if="shouldShowRecommendations and (recommendationState.loading or recommendationState.searched)"
+                class="o_it_helpdesk_faq_recommendations"
+                aria-live="polite"
+            >
+                <div t-if="recommendationState.loading" class="o_it_helpdesk_faq_hint">
+                    <i class="fa fa-spinner fa-spin" aria-hidden="true" />
+                    관련 FAQ를 찾는 중입니다.
+                </div>
+                <div t-elif="recommendationState.error" class="o_it_helpdesk_faq_hint text-muted">
+                    FAQ 추천을 불러오지 못했습니다. 문의 작성은 계속할 수 있습니다.
+                </div>
+                <div t-elif="recommendationState.items.length" class="o_it_helpdesk_faq_results">
+                    <p class="o_it_helpdesk_faq_heading">
+                        문의 전에 확인해 볼 FAQ
+                    </p>
+                    <button
+                        t-foreach="recommendationState.items"
+                        t-as="faq"
+                        t-key="faq.id"
+                        type="button"
+                        class="o_it_helpdesk_faq_result"
+                        t-on-click="() => this.openFaq(faq)"
+                    >
+                        <span class="o_it_helpdesk_faq_result_header">
+                            <strong t-esc="faq.name" />
+                            <small t-esc="faq.category_name" />
+                        </span>
+                        <span class="o_it_helpdesk_faq_preview" t-esc="faq.answer_preview" />
+                    </button>
+                </div>
+                <div t-else="" class="o_it_helpdesk_faq_hint text-muted">
+                    관련된 공개 FAQ가 없습니다.
+                </div>
+            </section>
+        </div>
+    </t>
+</templates>

@@ -740,6 +740,42 @@ class HelpdeskTicket(models.Model):
         )
         return True
 
+    # 해결 사례를 개인정보가 제외된 비공개 FAQ 초안으로 재활용
+    def action_create_faq_draft(self):
+        self.ensure_one()
+        if not self.env.user.has_group("it_helpdesk.group_it_helpdesk_agent"):
+            raise AccessError("IT 담당자만 FAQ 초안을 생성할 수 있습니다.")
+        self.check_access("read")
+        if self.state not in ("resolved", "closed"):
+            raise UserError("해결 또는 종료 상태의 문의만 FAQ로 만들 수 있습니다.")
+        if not (self.resolution or "").strip():
+            raise ValidationError("FAQ 초안으로 사용할 해결 내용이 없습니다.")
+
+        faq = self.env["it.helpdesk.faq"].create(
+            {
+                "name": self.name,
+                "answer": self.resolution,
+                "category_id": self.category_id.id,
+                "source_ticket_id": self.id,
+            }
+        )
+        return {
+            "type": "ir.actions.act_window",
+            "name": "FAQ 초안 검토",
+            "res_model": "it.helpdesk.faq",
+            "res_id": faq.id,
+            "view_mode": "form",
+            "views": [
+                (
+                    self.env.ref(
+                        "it_helpdesk.view_it_helpdesk_faq_management_form"
+                    ).id,
+                    "form",
+                )
+            ],
+            "target": "current",
+        }
+
     # 담당자의 재처리 시작
     def action_start_reopen(self):
         self.ensure_one()

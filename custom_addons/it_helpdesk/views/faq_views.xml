@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 직원·담당자 공용 공개 FAQ -->
+    <record id="view_it_helpdesk_faq_public_list" model="ir.ui.view">
+        <field name="name">it.helpdesk.faq.public.list</field>
+        <field name="model">it.helpdesk.faq</field>
+        <field name="priority" eval="10" />
+        <field name="arch" type="xml">
+            <list string="FAQ / 해결 가이드" create="false" edit="false" delete="false">
+                <field name="name" string="FAQ 제목" />
+                <field name="category_id" string="문의 유형" />
+                <field name="keywords" string="검색 키워드" optional="hide" />
+                <field name="write_date" string="마지막 수정일" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_it_helpdesk_faq_public_form" model="ir.ui.view">
+        <field name="name">it.helpdesk.faq.public.form</field>
+        <field name="model">it.helpdesk.faq</field>
+        <field name="priority" eval="10" />
+        <field name="arch" type="xml">
+            <form string="FAQ / 해결 가이드" create="false" edit="false" delete="false">
+                <sheet>
+                    <group>
+                        <field name="name" readonly="1" />
+                        <field name="category_id" readonly="1" />
+                        <field name="keywords" readonly="1" />
+                        <field name="write_date" readonly="1" />
+                    </group>
+                    <group string="해결 방법">
+                        <field name="answer" nolabel="1" readonly="1" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_it_helpdesk_faq_public_search" model="ir.ui.view">
+        <field name="name">it.helpdesk.faq.public.search</field>
+        <field name="model">it.helpdesk.faq</field>
+        <field name="arch" type="xml">
+            <search string="FAQ 검색">
+                <field name="name" />
+                <field name="keywords" />
+                <field name="category_id" />
+                <group>
+                    <filter
+                        name="group_by_category"
+                        string="유형별"
+                        context="{'group_by': 'category_id'}"
+                    />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_it_helpdesk_faq_public" model="ir.actions.act_window">
+        <field name="name">FAQ / 해결 가이드</field>
+        <field name="res_model">it.helpdesk.faq</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('active', '=', True), ('is_published', '=', True)]</field>
+        <field name="search_view_id" ref="view_it_helpdesk_faq_public_search" />
+    </record>
+
+    <record id="action_it_helpdesk_faq_public_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1" />
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_it_helpdesk_faq_public_list" />
+        <field name="act_window_id" ref="action_it_helpdesk_faq_public" />
+    </record>
+
+    <record id="action_it_helpdesk_faq_public_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2" />
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_it_helpdesk_faq_public_form" />
+        <field name="act_window_id" ref="action_it_helpdesk_faq_public" />
+    </record>
+
+    <!-- IT 담당자 FAQ 관리 -->
+    <record id="view_it_helpdesk_faq_management_list" model="ir.ui.view">
+        <field name="name">it.helpdesk.faq.management.list</field>
+        <field name="model">it.helpdesk.faq</field>
+        <field name="priority" eval="20" />
+        <field name="arch" type="xml">
+            <list string="FAQ 관리" delete="false">
+                <field name="name" />
+                <field name="category_id" />
+                <field name="is_published" />
+                <field name="active" />
+                <field name="write_date" string="마지막 수정일" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_it_helpdesk_faq_management_form" model="ir.ui.view">
+        <field name="name">it.helpdesk.faq.management.form</field>
+        <field name="model">it.helpdesk.faq</field>
+        <field name="priority" eval="20" />
+        <field name="arch" type="xml">
+            <form string="FAQ 관리" delete="false">
+                <header>
+                    <button
+                        name="action_publish"
+                        string="공개하기"
+                        type="object"
+                        class="btn-primary"
+                        invisible="is_published or not active"
+                    />
+                    <button
+                        name="action_unpublish"
+                        string="비공개로 전환"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="not is_published"
+                    />
+                    <button
+                        name="action_archive"
+                        string="보관"
+                        type="object"
+                        invisible="not active"
+                    />
+                    <button
+                        name="action_restore"
+                        string="복원"
+                        type="object"
+                        invisible="active"
+                    />
+                    <field
+                        name="is_published"
+                        widget="boolean_button"
+                        readonly="1"
+                    />
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" />
+                            <field
+                                name="category_id"
+                                options="{'no_create': True, 'no_create_edit': True}"
+                            />
+                            <field name="keywords" />
+                        </group>
+                        <group>
+                            <field name="author_id" readonly="1" />
+                            <field
+                                name="source_ticket_id"
+                                readonly="1"
+                                options="{'no_create': True, 'no_create_edit': True}"
+                            />
+                            <field name="active" readonly="1" />
+                            <field name="write_date" readonly="1" />
+                        </group>
+                    </group>
+                    <group string="해결 방법">
+                        <field name="answer" nolabel="1" />
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_it_helpdesk_faq_management_search" model="ir.ui.view">
+        <field name="name">it.helpdesk.faq.management.search</field>
+        <field name="model">it.helpdesk.faq</field>
+        <field name="arch" type="xml">
+            <search string="FAQ 관리 검색">
+                <field name="name" />
+                <field name="keywords" />
+                <field name="category_id" />
+                <separator />
+                <filter name="published" string="공개됨" domain="[('is_published', '=', True)]" />
+                <filter name="draft" string="비공개" domain="[('is_published', '=', False)]" />
+                <filter name="archived" string="보관됨" domain="[('active', '=', False)]" />
+                <group>
+                    <filter
+                        name="group_by_category"
+                        string="유형별"
+                        context="{'group_by': 'category_id'}"
+                    />
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_it_helpdesk_faq_management" model="ir.actions.act_window">
+        <field name="name">FAQ 관리</field>
+        <field name="res_model">it.helpdesk.faq</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_it_helpdesk_faq_management_search" />
+    </record>
+
+    <record id="action_it_helpdesk_faq_management_list" model="ir.actions.act_window.view">
+        <field name="sequence" eval="1" />
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_it_helpdesk_faq_management_list" />
+        <field name="act_window_id" ref="action_it_helpdesk_faq_management" />
+    </record>
+
+    <record id="action_it_helpdesk_faq_management_form" model="ir.actions.act_window.view">
+        <field name="sequence" eval="2" />
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_it_helpdesk_faq_management_form" />
+        <field name="act_window_id" ref="action_it_helpdesk_faq_management" />
+    </record>
+</odoo>

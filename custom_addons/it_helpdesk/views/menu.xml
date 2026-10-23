@@ -75,6 +75,15 @@
         sequence="5"
     />
 
+    <menuitem
+        id="menu_it_helpdesk_faq_public"
+        name="FAQ / 해결 가이드"
+        parent="menu_it_helpdesk_root"
+        action="action_it_helpdesk_faq_public"
+        groups="it_helpdesk.group_it_helpdesk_user"
+        sequence="20"
+    />
+
     <!-- 담당자용 List View 연결 -->
     <record id="action_it_helpdesk_ticket_list" model="ir.actions.act_window.view">
         <field name="sequence" eval="1" />
@@ -154,5 +163,14 @@
         action="action_it_helpdesk_category"
         groups="it_helpdesk.group_it_helpdesk_agent"
         sequence="10"
+    />
+
+    <menuitem
+        id="menu_it_helpdesk_faq_management"
+        name="FAQ 관리"
+        parent="menu_it_helpdesk_configuration"
+        action="action_it_helpdesk_faq_management"
+        groups="it_helpdesk.group_it_helpdesk_agent"
+        sequence="20"
     />
 </odoo>
