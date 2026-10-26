@@ -119,12 +119,13 @@ class TestHelpdeskDay4(TransactionCase):
         self.assertEqual(ticket.category_id, alternate_category)
 
         ticket.with_user(self.agent).action_assign_to(self.agent.id)
-        with self.assertRaises(UserError):
-            ticket.with_user(self.requester).write(
-                {"category_id": self.category.id}
-            )
+        self.assertEqual(ticket.state, "assigned")
+        ticket.with_user(self.requester).write(
+            {"category_id": self.category.id}
+        )
+        self.assertEqual(ticket.category_id, self.category)
         with self.assertRaises(AccessError):
-            ticket.with_user(self.agent).write({"category_id": self.category.id})
+            ticket.with_user(self.agent).write({"category_id": alternate_category.id})
         with self.assertRaises(ValidationError):
             ticket.sudo()._write_workflow({"category_id": inactive_category.id})
 
@@ -197,7 +198,7 @@ class TestHelpdeskDay4(TransactionCase):
         )
         self.assertEqual(
             set(requester_my_arch.xpath("/search/filter/@name")),
-            state_filters | priority_filters,
+            state_filters | priority_filters | {"archived_my_tickets"},
         )
         self.assertEqual(
             set(requester_my_arch.xpath("/search/group/filter/@name")),
@@ -219,7 +220,7 @@ class TestHelpdeskDay4(TransactionCase):
         )
         self.assertEqual(
             set(agent_my_arch.xpath("/search/filter/@name")),
-            state_filters | priority_filters | {"my_assigned", "unassigned"},
+            state_filters | priority_filters | {"my_assigned", "unassigned", "archived_my_tickets"},
         )
         self.assertEqual(
             set(agent_my_arch.xpath("/search/group/filter/@name")),

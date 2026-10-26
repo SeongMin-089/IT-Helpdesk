@@ -191,11 +191,20 @@ class TestHelpdeskDay5(TransactionCase):
         with self.assertRaises(AccessError):
             employee_ticket.with_context(active_test=False).with_user(
                 self.requester
-            ).write({"active": True})
-        assigned_ticket = self._create_ticket(suffix="배정 후 직원 보관 차단")
+            ).write({"name": "보관 중 내용 변경 시도"})
+        employee_ticket.with_context(active_test=False).with_user(
+            self.requester
+        ).write({"active": True})
+        self.assertTrue(employee_ticket.active)
+        assigned_ticket = self._create_ticket(suffix="배정 후 직원 보관 허용")
         assigned_ticket.with_user(self.agent).action_assign_to(self.agent.id)
-        with self.assertRaises(UserError):
-            assigned_ticket.with_user(self.requester).write({"active": False})
+        self.assertEqual(assigned_ticket.state, "assigned")
+        assigned_ticket.with_user(self.requester).write({"active": False})
+        self.assertFalse(assigned_ticket.active)
+        assigned_ticket.with_context(active_test=False).with_user(
+            self.requester
+        ).write({"active": True})
+        self.assertTrue(assigned_ticket.active)
         ticket = self._create_ticket(suffix="관계 보존")
         message = ticket.with_user(self.requester).message_post(body="보존할 댓글")
         attachment = self._create_attachment(ticket, name="preserve.txt")

@@ -59,10 +59,13 @@ class TestHelpdeskDay8(TransactionCase):
                 for field in source_fields
             },
             {
-                "it_helpdesk.group_it_helpdesk_agent": "id != False",
+                "it_helpdesk.group_it_helpdesk_agent": (
+                    "id != False and (not active or requester_id != uid or "
+                    "state not in ('received', 'assigned'))"
+                ),
                 "!it_helpdesk.group_it_helpdesk_agent": (
-                    "id != False and (state != 'received' or "
-                    "assigned_user_id != False)"
+                    "id != False and (not active or "
+                    "state not in ('received', 'assigned'))"
                 ),
             },
         )
@@ -124,9 +127,9 @@ class TestHelpdeskDay8(TransactionCase):
             (management_form, self.agent, None),
         ):
             source_arch = etree.fromstring(form_view.arch_db.encode())
-            self.assertEqual(
-                source_arch.get("class"),
+            self.assertIn(
                 "o_it_helpdesk_faq_form",
+                (source_arch.get("class") or "").split(),
             )
             answer_fields = source_arch.xpath(
                 "//group[@string='해결 방법']/field[@name='answer']"

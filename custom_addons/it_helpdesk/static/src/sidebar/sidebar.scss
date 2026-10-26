@@ -256,13 +256,8 @@ body.o_it_helpdesk_sidebar_active {
   }
 }
 
-// IT Helpdesk 앱에서만 사이드바와 본문을 가로 배치
+// IT Helpdesk에서만 사이드바와 본문을 가로 배치
 body.o_it_helpdesk_sidebar_active {
-  > .o_web_client {
-    display: flex;
-    flex-direction: column;
-  }
-
   .o_action_manager {
     flex: 1 1 auto;
     min-width: 0;
@@ -278,5 +273,21 @@ body.o_it_helpdesk_sidebar_active {
     width: 264px;
     height: auto;
     z-index: 100;
+  }
+}
+
+// 모바일에서는 사이드바 여백 제거
+@media (max-width: 767.98px) {
+  body.o_it_helpdesk_sidebar_active {
+    .o_action_manager {
+      margin-left: 0;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .o_it_helpdesk_sidebar {
+      width: 86vw;
+      max-width: 320px;
+    }
   }
 }
