@@ -1720,6 +1720,9 @@ class HelpdeskTicket(models.Model):
 
             raise AccessError("IT 담당자만 문의 담당자를 배정할 수 있습니다.")
 
+        if not self.active:
+            raise UserError("보관된 문의는 복원한 후 처리할 수 있습니다.")
+
         if self.state == "closed":
 
             raise UserError("종료된 문의는 담당자를 변경할 수 없습니다.")
@@ -1821,6 +1824,9 @@ class HelpdeskTicket(models.Model):
         if not self.env.user.has_group("it_helpdesk.group_it_helpdesk_agent"):
 
             raise AccessError("IT 담당자만 문의 처리를 시작할 수 있습니다.")
+
+        if not self.active:
+            raise UserError("보관된 문의는 복원한 후 처리할 수 있습니다.")
 
         if self.state != "assigned":
 
@@ -1939,6 +1945,9 @@ class HelpdeskTicket(models.Model):
         if not self.env.user.has_group("it_helpdesk.group_it_helpdesk_agent"):
 
             raise AccessError("IT 담당자만 재처리를 시작할 수 있습니다.")
+
+        if not self.active:
+            raise UserError("보관된 문의는 복원한 후 처리할 수 있습니다.")
 
         if self.state != "reopen_requested":
 

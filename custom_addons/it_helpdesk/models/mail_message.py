@@ -87,6 +87,15 @@ class HelpdeskMailMessage(models.Model):
                 if vals.get("model") != "it.helpdesk.ticket" or not vals.get("res_id"):
                     continue
                 ticket = tickets_by_id.get(vals["res_id"])
+                # Even when mail.thread calls mail.message.create() via sudo(),
+                # validate the real requesting user's read permission.
+                if self.env.uid != SUPERUSER_ID:
+                    if not (
+                        self.env.user.has_group("it_helpdesk.group_it_helpdesk_user")
+                        or self.env.user.has_group("it_helpdesk.group_it_helpdesk_agent")
+                    ):
+                        raise AccessError("문의 댓글 작성 권한이 없습니다.")
+                    ticket.sudo(False).check_access("read")
                 self.env["ir.attachment"]._helpdesk_check_ticket_access(ticket)
                 attachment_ids = self._helpdesk_attachment_ids(
                     vals.get("attachment_ids")

@@ -4,3 +4,4 @@ from . import test_day6
 from . import test_day7
 from . import test_day8
 from . import test_day9
+from . import test_day9_security
